@@ -92,15 +92,18 @@ class CommunityService(GuildService, UserService):
         returns different outputs depending on the parameters provided. The method has several
         overloads:
 
-            If no parameter is provided, the method returns None
-            If a single guild parameter of type disnake.Guild is provided, the method returns a
-            models.Guild object
-            If a single user parameter of type disnake.User is provided, the method returns a
-            models.User object
-            If both guild and user parameters of type disnake.Guild and disnake.User respectively
-            are
-            provided, the method returns a GuildAndUser object
-            If all three parameters guild, user, and member of type disnake.Guild, disnake.User,
+            -If no parameter is provided, the method returns None.
+
+            - If a single guild parameter of type disnake.Guild is provided, the method returns a
+            models.Guild object.
+
+            - If a single user parameter of type disnake.User is provided, the method returns a
+            models.User object.
+
+            - If both guild and user parameters of type disnake.Guild and disnake.User respectively
+            are provided, the method returns a GuildAndUser object.
+
+            - If all three parameters guild, user, and member of type disnake.Guild, disnake.User,
             and disnake.Member respectively are provided, the method returns a models.Member object
             However, when the member parameter is provided, guild and user parameters must also be
             provided, otherwise, a ValueError will be raised.

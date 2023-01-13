@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import SupportsInt, Union
+from typing import SupportsInt, Union, Literal
 
 import disnake
 from disnake import ApplicationCommandInteraction
@@ -17,6 +17,8 @@ SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
 
 
 # ... you can add your custom types and enums here
+
+MoneyEarnMethods = Literal["message", "voice", "reaction"]
 
 class CommandInteractionUserAndGuild(CommandInteraction):
     user_db: models.User
