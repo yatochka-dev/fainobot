@@ -86,7 +86,6 @@ class MemberVoiceMoneyCog(Cog, MemberCacheService, GuildService, MemberService):
                     guild=member.guild,
                 )
 
-                # @TODO: Add voice money to member
                 amount = settings.get_money_amount("voice")
 
                 await self.increment_member_money(
