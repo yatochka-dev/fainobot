@@ -16,6 +16,7 @@ datasource db {
 model Guild {
     snowflake String @id @map("_id")
     members   Member[]
+    items    Item[]
     language Language @default(en)
 
     settings GuildSettings?
@@ -96,6 +97,33 @@ model GuildSettings {
 } 
 
 
+model Item {
+    // id
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    // guild relation
+    guild   Guild  @relation(fields: [guildId], references: [snowflake])
+    guildId String
+
+    // title with max length 100
+    title String @db.String
+
+    // description with max length 1000
+    description String @db.String
+
+    // reply message with max length 1000
+    replyMessage String @db.String
+
+    // price
+    price Int
+
+    stock Int?
+
+    // can be bought only until 
+    availableUntil DateTime?
+    
+
+}
 
 enum Language {
     uk
