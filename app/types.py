@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import SupportsInt, Union
+from typing import SupportsInt, Union, Literal
 
 import disnake
 from disnake import ApplicationCommandInteraction
@@ -18,6 +18,8 @@ SupportsIntCast = Union[SupportsInt, str, bytes, bytearray]
 
 # ... you can add your custom types and enums here
 
+MoneyEarnMethods = Literal["message", "voice", "reaction"]
+
 class CommandInteractionUserAndGuild(CommandInteraction):
     user_db: models.User
     guild_db: models.Guild
@@ -30,8 +32,8 @@ class CommandInteractionCommunity(CommandInteractionUserAndGuild):
 class CacheNamespaces(Enum):
 
     # member cool-downs
-    member_voice_cooldown = "member_voice_cooldown"
-    member_message_cooldown = "member_message_cooldown"
-    member_reaction_cooldown = "member_reaction_cooldown"
+    member_voice_cooldown = "voice_cooldown"
+    member_message_cooldown = "message_cooldown"
+    member_reaction_cooldown = "reaction_cooldown"
 
 

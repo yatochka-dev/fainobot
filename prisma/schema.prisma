@@ -51,7 +51,7 @@ model Member {
 
 model GuildSettings {
     // region Connecting
-    guild   Guild  @relation(fields: [guildId], references: [snowflake])
+    guild   Guild  @relation(fields: [guildId], references: [snowflake], onDelete: Cascade)
     guildId String @id @map("_id")
     // endregion
 
@@ -60,9 +60,9 @@ model GuildSettings {
     messageMoneyEnabled Boolean @default(true)
     // Amount
     messageMoneyAmountType MoneyAmountType @default(fixed)
-    messagefixedMoneyAmount Int @default(10)
-    messageMinMoneyAmount Int @default(1)
-    messageMaxMoneyAmount Int @default(5)
+    messageFixedMoneyAmount Int @default(10)
+    messageMinMoneyAmount Int @default(5)
+    messageMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     messageMoneyCooldown Int @default(60)
 
@@ -73,9 +73,9 @@ model GuildSettings {
     voiceMoneyEnabled Boolean @default(true)
     // Amount
     voiceMoneyAmountType MoneyAmountType @default(fixed)
-    voicefixedMoneyAmount Int @default(10)
-    voiceMinMoneyAmount Int @default(1)
-    voiceMaxMoneyAmount Int @default(5)
+    voiceFixedMoneyAmount Int @default(10)
+    voiceMinMoneyAmount Int @default(5)
+    voiceMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     voiceMoneyCooldown Int @default(60)
 
@@ -86,14 +86,16 @@ model GuildSettings {
     reactionMoneyEnabled Boolean @default(true)
     // Amount
     reactionMoneyAmountType MoneyAmountType @default(fixed)
-    reactionfixedMoneyAmount Int @default(10)
-    reactionMinMoneyAmount Int @default(1)
-    reactionMaxMoneyAmount Int @default(5)
+    reactionFixedMoneyAmount Int @default(10)
+    reactionMinMoneyAmount Int @default(5)
+    reactionMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     reactionMoneyCooldown Int @default(60)
     
     // endregion
 } 
+
+
 
 enum Language {
     uk

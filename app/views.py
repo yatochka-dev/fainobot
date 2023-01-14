@@ -2,9 +2,10 @@ import disnake
 from disnake import MessageInteraction
 from disnake.ui import Item, View
 
-from app import Bot, Embed
 from app.exceptions import BotException
 from app.types import DiscordUtilizer
+from .bot import Bot
+from .embedding import Embed
 
 
 class BaseView(View):
@@ -26,7 +27,8 @@ class BaseView(View):
         )
 
         BotException.assert_value(
-            interaction.user.id == self.user.id, error_code=403, message="You can't use this interaction"
+            interaction.user.id == self.user.id, error_code=403,
+            message="You can't use this interaction"
         )
         return True
 
@@ -93,3 +95,10 @@ class PaginationView(BaseView):
         self._update_state()
 
         await inter.response.edit_message(embed=self.pages[self.current_page], view=self)
+
+
+class CancelView(BaseView):
+
+    @disnake.ui.button(emoji="🗑️", style=disnake.ButtonStyle.red, custom_id="delete")
+    async def remove(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        await inter.delete_original_message()

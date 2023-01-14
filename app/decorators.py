@@ -7,8 +7,15 @@ from .types import CommandInteraction
 
 
 def db_required(coro):
+    no_defer_commands = [
+
+    ]
+
     @functools.wraps(coro)
     async def wrapper(self, inter: CommandInteraction, *args, **kwargs):
+        if inter.application_command.name not in no_defer_commands:
+            await inter.response.defer()
+
         self.bot.logger.debug(
             "Called db_required decorator for command:  {}".format(
                 inter.application_command.name

@@ -30,6 +30,19 @@ class CacheService(AppService):
     async def clear(self, *, namespace: str = None):
         return await self.bot.cache.clear(namespace=namespace)
 
-    async def get_all(self, keys: list[str], *, namespace: str = None):
+    async def exists(self, key: str, *, namespace: str = None):
+        return await self.bot.cache.exists(key, namespace=namespace)
+
+    async def get_many(self, keys: list[str], *, namespace: str = None):
         return await self.bot.cache.multi_get(keys, namespace=namespace)
+
+    async def get_all(
+            self,
+            namespace: str = None,
+            keys: list[str] = None,
+            skip_nulls: bool = False,
+    ):
+        return [
+            clean for clean in await self.bot.cache.multi_get(namespace=namespace, keys=keys) if clean or not skip_nulls
+        ]
 

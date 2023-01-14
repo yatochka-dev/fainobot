@@ -1,12 +1,14 @@
-import datetime
 import os
 
 import disnake
-from disnake.ext.commands import Cog
+from disnake.components import MessageComponent
+from disnake.ext.commands import Cog, CommandInvokeError
 
 from app import Bot, Embed, md, cb
+from app.exceptions import BotException
 from app.services.GuildService import GuildService
 from app.services.MemberService import MemberService
+from app.types import CommandInteraction
 
 
 class Events(Cog, GuildService, MemberService):
@@ -31,10 +33,7 @@ class Events(Cog, GuildService, MemberService):
         self.bot.logger.info(f"Started bot in {os.getenv('STATE_NAME').title()} mode.")
         self.bot.logger.info("------")
 
-        await self.bot.cache.set(
-            "start_time",
-            self.bot.now.timestamp()
-        )
+        await self.bot.cache.set("start_time", self.bot.now.timestamp())
 
         for guild in self.bot.guilds:
             if not await self.exists_guild(guild.id):
@@ -53,8 +52,8 @@ class Events(Cog, GuildService, MemberService):
         embed = Embed(
             title="Thanks for adding me!",
             description=f"I'm a template bot for {md('Disnake'):bold}."
-            f"\n"
-            f"{cb(f'Start-Process -FilePath {self.bot.APP_SETTINGS.github_link}'):bash}",
+                        f"\n"
+                        f"{cb(f'Start-Process -FilePath {self.bot.APP_SETTINGS.github_link}'):bash}",
             user=guild.me,
         ).info
 
@@ -81,5 +80,88 @@ class Events(Cog, GuildService, MemberService):
         self.bot.logger.info(f"Member left: {member} (ID: {member.id})")
 
 
+class ExceptionsHandler(Cog):
+    def __init__(self, bot: Bot):
+        self.bot = bot
+
+    @Cog.listener(name="on_slash_command_error")
+    @Cog.listener(name="on_message_command_error")
+    async def interaction_commands_error_handler(
+            self, inter: CommandInteraction, error: Exception
+    ) -> None:
+        if isinstance(error, BotException):
+            await inter.send(
+                embed=error.to_embed(inter.author),
+                ephemeral=True,
+                delete_after=180,
+            )
+        else:
+            message = str(error)
+
+
+            if isinstance(error, CommandInvokeError):
+                message = str(error.original)
+
+            await inter.send(
+                embed=BotException(500, message).to_embed(inter.author),
+                ephemeral=True,
+                delete_after=180,
+            )
+            self.bot.logger.error("Unhandled exception")
+            raise error
+
+
+class LowLevelListener(Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @Cog.listener("on_button_click")
+    async def on_cancel_button(self, inter: disnake.MessageInteraction):
+        component: MessageComponent = inter.component
+
+        if not component.custom_id.startswith("deleteOriginalMessage"):
+            return
+
+        _, user_id = component.custom_id.split("_")
+
+        if int(user_id) != inter.author.id:
+            await inter.send(
+                embed=Embed(
+                    title="You are not allowed to do this!",
+                    description="You are not allowed to delete this message.",
+                    user=inter.author,
+                ).error,
+                ephemeral=True,
+                delete_after=15,
+            )
+            return
+
+        try:
+            await inter.message.edit(
+                embed=Embed(
+                    title="Message deleted!",
+                    description=f"The message was deleted successfully, by <@!{user_id}>.",
+                    user=inter.author,
+                ).success,
+                delete_after=3,
+                view=None,
+            )
+        except disnake.NotFound:
+            # original_message = await inter.original_response()
+            # await original_message.delete()
+
+            await inter.send(
+                embed=Embed(
+                    title="Can't delete message!",
+                    description="This message is ephemeral or something went wrong.",
+                    user=inter.author,
+                ).error,
+                ephemeral=True,
+                delete_after=15,
+            )
+
+
 def setup(bot: Bot):
     bot.add_cog(Events(bot))
+    bot.add_cog(ExceptionsHandler(bot))
+    bot.add_cog(LowLevelListener(bot))
