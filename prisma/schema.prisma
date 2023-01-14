@@ -105,14 +105,14 @@ model Item {
     guild   Guild  @relation(fields: [guildId], references: [snowflake])
     guildId String
 
-    // title with max length 100
+    // title with max length 100 chars
     title String @db.String
 
-    // description with max length 1000
-    description String @db.String
+    // description with max length 1000 chars
+    description String? @db.String
 
-    // reply message with max length 1000
-    replyMessage String @db.String
+    // reply message with max length 500 chars
+    replyMessage String? @db.String
 
     // price
     price Int
@@ -135,3 +135,4 @@ enum MoneyAmountType {
     fixed
     random
 }
+
