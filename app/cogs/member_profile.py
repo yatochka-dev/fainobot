@@ -33,7 +33,6 @@ class MemberProfileCog(Cog, GuildService, MemberService):
                 description="Member to get profile from",
             ),
     ):
-        raise Exception("This is a test exception")
         member = get_member_from_member_and_interaction(inter, member_)
         guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
         member_db = inter.member_db

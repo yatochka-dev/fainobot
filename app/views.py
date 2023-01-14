@@ -102,3 +102,19 @@ class CancelView(BaseView):
     @disnake.ui.button(emoji="🗑️", style=disnake.ButtonStyle.red, custom_id="delete")
     async def remove(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
         await inter.delete_original_message()
+
+
+class ConfirmationView(BaseView):
+    answer: bool = False
+
+    @disnake.ui.button(emoji="✅", style=disnake.ButtonStyle.green, custom_id="confirm")
+    async def confirm(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        self.answer = True
+        await inter.response.defer()
+        self.stop()
+
+    @disnake.ui.button(emoji="❌", style=disnake.ButtonStyle.red, custom_id="cancel")
+    async def cancel(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        self.answer = False
+        await inter.response.defer()
+        self.stop()

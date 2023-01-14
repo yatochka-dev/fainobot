@@ -3,6 +3,7 @@ import datetime
 import disnake
 
 from app import Settings
+from app.loggs import logger
 from app.types import DiscordUtilizer
 
 
@@ -101,3 +102,4 @@ class Embed:
 
     def __str__(self):
         return str(self.embed)
+

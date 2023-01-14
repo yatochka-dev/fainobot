@@ -1,5 +1,5 @@
 import prisma.models
-from prisma import Prisma
+from prisma import Prisma, register
 from prisma.models import BaseModel
 
 
@@ -17,3 +17,4 @@ prisma.models.BaseModel = UpdatedBaseModel
 __all__ = ["prisma"]
 
 prisma = Prisma()
+register(prisma)
