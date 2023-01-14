@@ -1,5 +1,5 @@
 import disnake
-from disnake.ext.commands import Cog, slash_command, Param
+from disnake.ext.commands import Cog, slash_command, Param, message_command
 
 from app import Bot, Embed, EmbedField
 from app.decorators import db_required
@@ -33,6 +33,7 @@ class MemberProfileCog(Cog, GuildService, MemberService):
                 description="Member to get profile from",
             ),
     ):
+        raise Exception("This is a test exception")
         member = get_member_from_member_and_interaction(inter, member_)
         guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
         member_db = inter.member_db
@@ -64,13 +65,26 @@ class MemberProfileCog(Cog, GuildService, MemberService):
 
         await inter.send(embed=embed, components=[self.bot.get_cancel_button(inter.author)])
 
+    @message_command(
+        name="profile",
+    )
+    async def get_member_profile_message(
+            self,
+            inter: CommandInteractionCommunity,
+            message: disnake.Message,
+    ):
+        if message.author.bot:
+            raise BotException(code=405, message="This command can't be used for bots")
+
+        await self.get_member_profile(inter, message.author)
+
     async def cog_slash_command_check(
             self, inter: CommandInteraction, *args, **kwargs
     ) -> bool:
         member = inter.options.get("user", None) or inter.author
 
         if member.bot:
-            raise BotException(code=405, message="This command can't be used for bots")
+            raise BotException(code=405, message=f"This command can't be used for bots")
 
         return True
 

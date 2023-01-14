@@ -2,7 +2,7 @@ import os
 
 import disnake
 from disnake.components import MessageComponent
-from disnake.ext.commands import Cog
+from disnake.ext.commands import Cog, CommandInvokeError
 
 from app import Bot, Embed, md, cb
 from app.exceptions import BotException
@@ -84,23 +84,30 @@ class ExceptionsHandler(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @Cog.listener()
-    async def on_slash_command_error(self, inter: CommandInteraction, error: Exception) -> None:
+    @Cog.listener(name="on_slash_command_error")
+    @Cog.listener(name="on_message_command_error")
+    async def interaction_commands_error_handler(
+            self, inter: CommandInteraction, error: Exception
+    ) -> None:
         if isinstance(error, BotException):
             await inter.send(
                 embed=error.to_embed(inter.author),
                 ephemeral=True,
                 delete_after=180,
-                components=[self.bot.get_cancel_button(inter.author)],
             )
         else:
+            message = str(error)
+
+
+            if isinstance(error, CommandInvokeError):
+                message = str(error.original)
+
             await inter.send(
-                embed=BotException(500, str(error)).to_embed(inter.author),
+                embed=BotException(500, message).to_embed(inter.author),
                 ephemeral=True,
                 delete_after=180,
-                components=[self.bot.get_cancel_button(inter.author)],
             )
-            self.bot.logger.error("Unhandled exception", exc_info=error)
+            self.bot.logger.error("Unhandled exception")
             raise error
 
 
@@ -140,6 +147,9 @@ class LowLevelListener(Cog):
                 view=None,
             )
         except disnake.NotFound:
+            # original_message = await inter.original_response()
+            # await original_message.delete()
+
             await inter.send(
                 embed=Embed(
                     title="Can't delete message!",

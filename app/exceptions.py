@@ -1,5 +1,6 @@
 from disnake.ext.commands import CommandInvokeError as cmd_invoke_error
 
+from . import cb
 from .embedding import Embed
 from .loggs import logger
 from .types import DiscordUtilizer
@@ -23,7 +24,7 @@ class BotException(cmd_invoke_error):
     ):
         return Embed(
             title=self.title,
-            description=self.message,
+            description=f"{cb(self.message):python}",
             user=user
         ).error
 
