@@ -46,8 +46,9 @@ model Member {
     bank  Int @default(0) 
     // endregion
 
-
-
+    // region Inventory
+    inventoryItems InventoryItem[]
+    // endregion
 }
 
 model GuildSettings {
@@ -122,7 +123,16 @@ model Item {
     // can be bought only until 
     availableUntil DateTime?
     
+    inventoryItems InventoryItem[]
+}
 
+model InventoryItem {
+    original Item @relation(fields: [originalId], references: [id])
+    originalId String @id @db.ObjectId @map("_id") 
+
+    owner Member @relation(fields: [ownerId], references: [id])
+    ownerId String @db.ObjectId
+    
 }
 
 enum Language {

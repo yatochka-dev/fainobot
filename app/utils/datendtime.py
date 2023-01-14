@@ -1,5 +1,6 @@
 import datetime
 import re
+from typing import NamedTuple
 
 from dateutil.parser import parse
 
@@ -46,3 +47,14 @@ def parse_datetime(input_string: str) -> datetime.datetime:
     logger.debug(f"Returning {target_datetime}")
 
     return target_datetime
+
+
+class MMDateTime(NamedTuple):
+    min: datetime.datetime
+    max: datetime.datetime
+
+    def __contains__(self, item: datetime.datetime):
+        if not isinstance(item, datetime.datetime):
+            return False
+
+        return self.min <= item <= self.max
