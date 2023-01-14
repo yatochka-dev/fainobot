@@ -58,3 +58,8 @@ class MissingPermissions(BotException):
 class CantUseThatHere(BotException):
     code = 404
     message = "You can't use that here"
+
+
+class NotForBot(BotException):
+    code = 405
+    message = "That command is not for bots"

@@ -1,18 +1,21 @@
 import datetime
+import random
 from pathlib import Path
 
-from aiocache import Cache, RedisCache
 import disnake.mixins
 import pydantic.main
+from aiocache import Cache
 from disnake.ext.commands import InteractionBot
 from pydantic import BaseSettings
 
 from .db import prisma
+
+# from .exceptions import BotException
 from .loggs import logger, disnake_logger
 
 __all__ = ["Bot", "Settings"]
 
-from .types import SupportsIntCast
+from .types import SupportsIntCast, DiscordUtilizer
 
 
 class AppSettings(BaseSettings):
@@ -73,3 +76,11 @@ class Bot(InteractionBot):
     @property
     def now(self):
         return datetime.datetime.now(tz=self.APP_SETTINGS.TIMEZONE)
+
+    def get_cancel_button(self, user: DiscordUtilizer):
+        return disnake.ui.Button(
+            style=disnake.ButtonStyle.gray,
+            custom_id=f"deleteOriginalMessage_{user.id}",
+            emoji=disnake.utils.get(self.emojis, name=f"deleteMessageEmoji{random.randint(1, 2)}")
+            or "❌",
+        )
