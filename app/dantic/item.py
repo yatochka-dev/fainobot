@@ -1,27 +1,21 @@
 import datetime
 
-from pydantic import BaseModel, validator, Field, ValidationError
+from pydantic import BaseModel, validator, Field
 
-from app import MMLength
 from app import Settings
-from app.utils.numbers import MMNumber
-
-TITLE_LENGTH = MMLength(min=1, max=200)
-DESCRIPTION_LENGTH = MMLength(min=1, max=1024)
-REPLY_LENGTH = MMLength(min=1, max=1024)
-STOCK_NUMBER = MMNumber(min=1, max=1000)
-PRICE_NUMBER = MMNumber(min=1, max=1000000)
 
 
 class ValidItemDataDANT(BaseModel):
-    title: str = Field(min_length=TITLE_LENGTH.min, max_length=TITLE_LENGTH.max)
+    title: str = Field(min_length=Settings.TITLE_LENGTH.min, max_length=Settings.TITLE_LENGTH.max)
     description: str | None = Field(
-        min_length=DESCRIPTION_LENGTH.min, max_length=DESCRIPTION_LENGTH.max
+        min_length=Settings.DESCRIPTION_LENGTH.min, max_length=Settings.DESCRIPTION_LENGTH.max
     )
-    reply: str | None = Field(min_length=REPLY_LENGTH.min, max_length=REPLY_LENGTH.max)
+    reply: str | None = Field(
+        min_length=Settings.REPLY_LENGTH.min, max_length=Settings.REPLY_LENGTH.max
+    )
 
-    stock: int | None = Field(ge=STOCK_NUMBER.min, le=STOCK_NUMBER.max)
-    price: int = Field(ge=PRICE_NUMBER.min, le=PRICE_NUMBER.max)
+    stock: int | None = Field(ge=Settings.STOCK_NUMBER.min, le=Settings.STOCK_NUMBER.max)
+    price: int = Field(ge=Settings.PRICE_NUMBER.min, le=Settings.PRICE_NUMBER.max)
 
     available_time: datetime.datetime | None
 
@@ -34,7 +28,7 @@ class ValidItemDataDANT(BaseModel):
             raise ValueError("available_time must be in the future")
 
         if available_time > datetime.datetime.now(tz=Settings.TIMEZONE) + datetime.timedelta(
-                days=365
+            days=365
         ):
             raise ValueError("available_time must be within a year")
 

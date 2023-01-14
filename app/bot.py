@@ -1,6 +1,7 @@
 import datetime
 import random
 from pathlib import Path
+from typing import NamedTuple
 
 import disnake.mixins
 import pydantic.main
@@ -9,13 +10,44 @@ from disnake.ext.commands import InteractionBot
 from pydantic import BaseSettings
 
 from .db import prisma
-
 # from .exceptions import BotException
 from .loggs import logger, disnake_logger
 
-__all__ = ["Bot", "Settings"]
+__all__ = ["Bot", "Settings", "MMNumber", "MMLength"]
 
 from .types import SupportsIntCast, DiscordUtilizer
+
+
+class MMNumber(NamedTuple):
+    min: int
+    max: int
+
+    def __contains__(self, item: int):
+        if not isinstance(item, int):
+            return False
+
+        return self.min <= item <= self.max
+
+
+class MMLength(NamedTuple):
+    min: int
+    max: int
+
+    def __str__(self):
+        return f"{self.min}-{self.max}"
+
+    def __contains__(self, item: str) -> bool:
+        """str in MMLength"""
+
+        if not isinstance(item, str):
+            return False
+
+        return self.min <= len(item) <= self.max
+
+    def validate_many(self, *items: str) -> bool:
+        """Validate multiple items"""
+
+        return all(item in self for item in items)
 
 
 class AppSettings(BaseSettings):
@@ -34,6 +66,13 @@ class AppSettings(BaseSettings):
     # if none - won't be added
     AUTHOR_DISPLAY_NAME: str | None = None
     ICON_URL: str | None = None
+
+    # Economy
+    TITLE_LENGTH = MMLength(min=1, max=200)
+    DESCRIPTION_LENGTH = MMLength(min=1, max=1024)
+    REPLY_LENGTH = MMLength(min=1, max=1024)
+    STOCK_NUMBER = MMNumber(min=1, max=1000)
+    PRICE_NUMBER = MMNumber(min=1, max=1000000)
 
 
 Settings = AppSettings()
@@ -82,5 +121,5 @@ class Bot(InteractionBot):
             style=disnake.ButtonStyle.gray,
             custom_id=f"deleteOriginalMessage_{user.id}",
             emoji=disnake.utils.get(self.emojis, name=f"deleteMessageEmoji{random.randint(1, 2)}")
-            or "❌",
+                  or "❌",
         )

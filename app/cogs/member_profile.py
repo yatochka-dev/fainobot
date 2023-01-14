@@ -10,7 +10,7 @@ from app.types import CommandInteractionCommunity, CommandInteraction
 
 
 def get_member_from_member_and_interaction(
-        interaction: CommandInteraction, _member_: disnake.Member = None
+    interaction: CommandInteraction, _member_: disnake.Member = None
 ):
     if _member_ is None:
         return interaction.author
@@ -25,13 +25,13 @@ class MemberProfileCog(Cog, GuildService, MemberService):
     @slash_command(name="profile", description="Get a member's profile")
     @db_required
     async def get_member_profile(
-            self,
-            inter: CommandInteractionCommunity,
-            member_: disnake.Member = Param(
-                None,
-                name="user",
-                description="Member to get profile from",
-            ),
+        self,
+        inter: CommandInteractionCommunity,
+        member_: disnake.Member = Param(
+            None,
+            name="user",
+            description="Member to get profile from",
+        ),
     ):
         member = get_member_from_member_and_interaction(inter, member_)
         guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
@@ -68,18 +68,16 @@ class MemberProfileCog(Cog, GuildService, MemberService):
         name="profile",
     )
     async def get_member_profile_message(
-            self,
-            inter: CommandInteractionCommunity,
-            message: disnake.Message,
+        self,
+        inter: CommandInteractionCommunity,
+        message: disnake.Message,
     ):
         if message.author.bot:
             raise BotException(code=405, message="This command can't be used for bots")
 
         await self.get_member_profile(inter, message.author)
 
-    async def cog_slash_command_check(
-            self, inter: CommandInteraction, *args, **kwargs
-    ) -> bool:
+    async def cog_slash_command_check(self, inter: CommandInteraction, *args, **kwargs) -> bool:
         member = inter.options.get("user", None) or inter.author
 
         if member.bot:
