@@ -15,7 +15,7 @@ class GuildAndUser(NamedTuple):
 class CommunityService(GuildService, UserService):
     async def process_guild(self, guild: disnake.Guild):
         if not isinstance(guild, disnake.Guild):
-            raise TypeError("guild must be a disnake.Guild")
+            raise TypeError(f"guild must be a disnake.Guild, got {guild.__class__.__name__!r}")
 
         guild_ = await self.get_guild(guild_id=guild.id)
 

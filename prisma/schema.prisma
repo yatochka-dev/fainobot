@@ -61,8 +61,8 @@ model GuildSettings {
     // Amount
     messageMoneyAmountType MoneyAmountType @default(fixed)
     messageFixedMoneyAmount Int @default(10)
-    messageMinMoneyAmount Int @default(1)
-    messageMaxMoneyAmount Int @default(5)
+    messageMinMoneyAmount Int @default(5)
+    messageMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     messageMoneyCooldown Int @default(60)
 
@@ -74,8 +74,8 @@ model GuildSettings {
     // Amount
     voiceMoneyAmountType MoneyAmountType @default(fixed)
     voiceFixedMoneyAmount Int @default(10)
-    voiceMinMoneyAmount Int @default(1)
-    voiceMaxMoneyAmount Int @default(5)
+    voiceMinMoneyAmount Int @default(5)
+    voiceMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     voiceMoneyCooldown Int @default(60)
 
@@ -87,13 +87,15 @@ model GuildSettings {
     // Amount
     reactionMoneyAmountType MoneyAmountType @default(fixed)
     reactionFixedMoneyAmount Int @default(10)
-    reactionMinMoneyAmount Int @default(1)
-    reactionMaxMoneyAmount Int @default(5)
+    reactionMinMoneyAmount Int @default(5)
+    reactionMaxMoneyAmount Int @default(25)
     // cooldown - seconds
     reactionMoneyCooldown Int @default(60)
     
     // endregion
 } 
+
+
 
 enum Language {
     uk

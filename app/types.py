@@ -32,8 +32,8 @@ class CommandInteractionCommunity(CommandInteractionUserAndGuild):
 class CacheNamespaces(Enum):
 
     # member cool-downs
-    member_voice_cooldown = "member_voice_cooldown"
-    member_message_cooldown = "member_message_cooldown"
-    member_reaction_cooldown = "member_reaction_cooldown"
+    member_voice_cooldown = "voice_cooldown"
+    member_message_cooldown = "message_cooldown"
+    member_reaction_cooldown = "reaction_cooldown"
 
 

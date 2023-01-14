@@ -1,5 +1,4 @@
 import random
-from typing import runtime_checkable
 
 from prisma.enums import MoneyAmountType
 from prisma.models import GuildSettings
@@ -7,7 +6,6 @@ from prisma.models import GuildSettings
 from app.types import MoneyEarnMethods
 
 
-@runtime_checkable
 class GuildSettingsFromRaw:
 
     def __init__(
@@ -30,7 +28,10 @@ class GuildSettingsFromRaw:
     #
     #     return result
 
-    @runtime_checkable
+    def __str__(self):
+        # return all functions calls with every for_ literal
+        return "<GuildSettingsFromRaw settings={}>".format(self.settings)
+
     def get_money_amount(self, for_: MoneyEarnMethods, /) -> float | int:
         amountType = getattr(self.settings, f"{for_.lower()}MoneyAmountType")
         minAmount = getattr(self.settings, f"{for_.lower()}MinMoneyAmount")
@@ -46,14 +47,12 @@ class GuildSettingsFromRaw:
 
         return result
 
-    @runtime_checkable
     def get_money_is_enabled(self, for_: MoneyEarnMethods, /) -> bool:
-        enabled = getattr(self.settings, f"{for_.lower()}MoneyIsEnabled")
+        enabled = getattr(self.settings, f"{for_.lower()}MoneyEnabled")
         if enabled is None:
             raise ValueError(f"Invalid money_is_enabled for {for_!r}")
         return enabled
 
-    @runtime_checkable
     def get_money_cooldown(self, for_: MoneyEarnMethods, /) -> int:
         cooldown = getattr(self.settings, f"{for_.lower()}MoneyCooldown")
         if cooldown is None:

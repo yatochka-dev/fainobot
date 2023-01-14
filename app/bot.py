@@ -66,7 +66,7 @@ class Bot(InteractionBot):
         self.disnake_logger = disnake_logger
 
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
-        pydantic.main.BaseModel.id = id_  # noqa
+        pydantic.main.BaseModel.id_ = id_  # noqa
 
         super().__init__(*args, **kwargs, intents=intents)
 
