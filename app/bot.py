@@ -97,7 +97,7 @@ class Bot(InteractionBot):
     def __init__(self, *args, **kwargs):
         intents = disnake.Intents.default()
         intents.members = True
-        intents.guild_scheduled_events = True
+        intents.reactions = True  # for on_reaction_add event
 
         self.cache = Cache()
 
