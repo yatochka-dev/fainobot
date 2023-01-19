@@ -74,6 +74,9 @@ class MemberMoneyCog(Cog, MemberCacheService, GuildService, MemberService):
         if reaction.message.guild is None:
             return
 
+        if member == reaction.message.author:
+            return
+
         under_cd, _ = await self.member_under_cooldown(
             member_id=member.id,
             namespace=CacheNamespaces.member_reaction_cooldown,

@@ -3,15 +3,17 @@ import os
 import disnake
 from disnake.components import MessageComponent
 from disnake.ext.commands import Cog, CommandInvokeError
+from disnake.ext.tasks import loop
 
 from app import Bot, Embed, md, cb
 from app.exceptions import BotException
 from app.services.GuildService import GuildService
 from app.services.MemberService import MemberService
+from app.services.RoleService import RoleService
 from app.types import CommandInteraction
 
 
-class Events(Cog, GuildService, MemberService):
+class Events(Cog, GuildService, MemberService, RoleService):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -41,6 +43,7 @@ class Events(Cog, GuildService, MemberService):
                 self.bot.logger.info(f"Added guild: {guild.name} (ID: {guild.id})")
             else:
                 self.bot.logger.info(f"Guild already exists: {guild.name} (ID: {guild.id})")
+
 
     @Cog.listener(
         "on_guild_join",
@@ -161,7 +164,9 @@ class LowLevelListener(Cog):
             )
 
 
+
 def setup(bot: Bot):
     bot.add_cog(Events(bot))
     bot.add_cog(ExceptionsHandler(bot))
     bot.add_cog(LowLevelListener(bot))
+

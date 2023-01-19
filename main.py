@@ -55,6 +55,7 @@ async def startup():
 
     try:
         await prisma.connect()
+
         discord_token = os.getenv("DISCORD_TOKEN")
 
         # Print message with each logger level

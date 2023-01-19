@@ -8,7 +8,8 @@ from .types import CommandInteraction
 
 def db_required(coro):
     no_defer_commands = [
-
+        "create",
+        "edit",
     ]
 
     @functools.wraps(coro)

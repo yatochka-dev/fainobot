@@ -12,3 +12,5 @@ def get_mentions_as_list(text: str) -> list[str]:
 def get_mentions_as_string(text: str, /) -> str:
     mentions = get_mentions_as_list(text)
     return " ".join(mentions)
+
+
