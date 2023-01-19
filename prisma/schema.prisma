@@ -16,6 +16,8 @@ datasource db {
 model Guild {
     snowflake String @id @map("_id")
     members   Member[]
+    roles     Role[]
+    items    Item[]
     language Language @default(en)
 
     settings GuildSettings?
@@ -45,8 +47,9 @@ model Member {
     bank  Int @default(0) 
     // endregion
 
-
-
+    // region Inventory
+    inventoryItems InventoryItem[]
+    // endregion
 }
 
 model GuildSettings {
@@ -95,7 +98,56 @@ model GuildSettings {
     // endregion
 } 
 
+model Role {
 
+    snowflake String @id @map("_id")
+
+    guild   Guild  @relation(fields: [guildId], references: [snowflake])
+    guildId String
+    
+    collectType CollectType @default(noCollect)
+    collectFixedAmount Int @default(10)
+    collectPercentageAmount Int @default(10)
+}
+
+
+model Item {
+    // id
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    // guild relation
+    guild   Guild  @relation(fields: [guildId], references: [snowflake])
+    guildId String
+
+    // title with max length 100 chars
+    title String @db.String
+
+    // description with max length 1000 chars
+    description String? @db.String
+
+    // reply message with max length 500 chars
+    replyMessage String? @db.String
+
+    // price
+    price Int
+
+    stock Int?
+
+    // can be bought only until 
+    availableUntil DateTime?
+    
+    inventoryItems InventoryItem[]
+}
+
+
+
+model InventoryItem {
+    original Item @relation(fields: [originalId], references: [id])
+    originalId String @id @db.ObjectId @map("_id") 
+
+    owner Member @relation(fields: [ownerId], references: [id])
+    ownerId String @db.ObjectId   
+}
 
 enum Language {
     uk
@@ -106,4 +158,10 @@ enum Language {
 enum MoneyAmountType {
     fixed
     random
+}
+
+enum CollectType {
+    fixed
+    percentage
+    noCollect
 }
