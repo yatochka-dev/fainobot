@@ -52,3 +52,8 @@ class GuildService(CRUDXService):
     async def get_all_guilds(self) -> list[models.Guild]:
         self.bot.logger.debug("Getting guilds list")
         return await self.bot.prisma.guild.find_many()
+
+
+
+
+

@@ -16,6 +16,7 @@ datasource db {
 model Guild {
     snowflake String @id @map("_id")
     members   Member[]
+    roles     Role[]
     items    Item[]
     language Language @default(en)
 
@@ -97,6 +98,18 @@ model GuildSettings {
     // endregion
 } 
 
+model Role {
+
+    snowflake String @id @map("_id")
+
+    guild   Guild  @relation(fields: [guildId], references: [snowflake])
+    guildId String
+    
+    collectType CollectType @default(noCollect)
+    collectFixedAmount Int @default(10)
+    collectPercentageAmount Int @default(10)
+}
+
 
 model Item {
     // id
@@ -126,13 +139,14 @@ model Item {
     inventoryItems InventoryItem[]
 }
 
+
+
 model InventoryItem {
     original Item @relation(fields: [originalId], references: [id])
     originalId String @id @db.ObjectId @map("_id") 
 
     owner Member @relation(fields: [ownerId], references: [id])
-    ownerId String @db.ObjectId
-    
+    ownerId String @db.ObjectId   
 }
 
 enum Language {
@@ -146,3 +160,8 @@ enum MoneyAmountType {
     random
 }
 
+enum CollectType {
+    fixed
+    percentage
+    noCollect
+}

@@ -118,3 +118,37 @@ class ConfirmationView(BaseView):
         self.answer = False
         await inter.response.defer()
         self.stop()
+
+
+class SendModalWithButtonView(BaseView):
+
+    def __init__(
+            self,
+            modal: disnake.ui.Modal,
+            button_label: str = "Open modal",
+            button_style: disnake.ButtonStyle = disnake.ButtonStyle.blurple,
+            button_emoji: str = None,
+            **kwargs,
+    ):
+        self.modal = modal
+
+        self.button_label = button_label
+        self.button_style = button_style
+        self.button_emoji = button_emoji
+        super().__init__(**kwargs)
+
+        self._update_state()
+
+    def _update_state(self) -> None:
+
+        for item in self.children:
+            if isinstance(item, disnake.ui.Button) and item.custom_id == "send":
+                item.emoji = self.button_emoji
+                item.label = self.button_label
+                item.style = self.button_style
+
+    @disnake.ui.button(emoji="📩", style=disnake.ButtonStyle.blurple, custom_id="send")
+    async def send(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        await inter.response.send_modal(self.modal)
+        await inter.edit_original_response(view=None)
+        self.stop()

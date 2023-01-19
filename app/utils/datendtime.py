@@ -49,6 +49,33 @@ def parse_datetime(input_string: str) -> datetime.datetime:
     return target_datetime
 
 
+def format_datetime(input_datetime: datetime.datetime) -> str:
+    current_datetime = datetime.datetime.now(tz=Settings.TIMEZONE)
+    time_diff = input_datetime - current_datetime
+    output_string = ""
+    years, remainder = divmod(time_diff.days, 365)
+    if years:
+        output_string += f"{years}y"
+    months, days = divmod(remainder, 30)
+    if months:
+        output_string += f"{months}M"
+    weeks, days = divmod(days, 7)
+    if weeks:
+        output_string += f"{weeks}w"
+    if days:
+        output_string += f"{days}d"
+    hours, remainder = divmod(time_diff.seconds, 3600)
+    if hours:
+        output_string += f"{hours}h"
+    minutes, seconds = divmod(remainder, 60)
+    if minutes:
+        output_string += f"{minutes}m"
+    if seconds:
+        output_string += f"{seconds}s"
+
+    return output_string
+
+
 class MMDateTime(NamedTuple):
     min: datetime.datetime
     max: datetime.datetime

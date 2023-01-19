@@ -45,7 +45,7 @@ class ItemService(AppService):
         return item
 
     async def update_item(self, item_id: str, data: ValidItemDataDANT):
-        self.bot.logger.debug(f"Updating item with data: {data!r}")
+        self.bot.logger.debug(f"Updating item with id {item_id} data: {data!r}")
         updated = await self.bot.prisma.item.update(
             where={
                 "id": item_id,
@@ -53,7 +53,7 @@ class ItemService(AppService):
             data={
                 "title": data.title,
                 "description": data.description,
-                "reply": data.reply,
+                "replyMessage": data.reply,
                 "stock": data.stock,
                 "price": data.price,
                 "available_time": data.available_time,

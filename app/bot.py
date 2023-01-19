@@ -1,4 +1,5 @@
 import datetime
+import os
 import random
 from pathlib import Path
 from typing import NamedTuple
@@ -51,7 +52,7 @@ class MMLength(NamedTuple):
 
 
 class AppSettings(BaseSettings):
-    TESTING: bool = True
+    TESTING: bool = os.environ.get("TESTING", False)
     TIMEZONE = datetime.timezone(offset=datetime.timedelta(hours=3), name="UTC")
 
     github_link = "https://github.com/yatochka-dev/discord-bot-boilerplate"
