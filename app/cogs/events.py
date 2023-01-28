@@ -37,6 +37,10 @@ class Events(Cog, GuildService, MemberService, RoleService):
 
         await self.bot.cache.set("start_time", self.bot.now.timestamp())
 
+        deleted = await self.clean_up_database_guilds()
+
+        self.bot.logger.info(f"Cleaned up {deleted} guilds from database.")
+
         for guild in self.bot.guilds:
             if not await self.exists_guild(guild.id):
                 await self.add_guild(guild)

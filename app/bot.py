@@ -52,7 +52,7 @@ class MMLength(NamedTuple):
 
 
 class AppSettings(BaseSettings):
-    TESTING: bool = os.environ.get("TESTING", False)
+    TESTING: bool = True if isinstance(os.environ.get("TESTING"), str) else False
     TIMEZONE = datetime.timezone(offset=datetime.timedelta(hours=3), name="UTC")
 
     github_link = "https://github.com/yatochka-dev/discord-bot-boilerplate"
@@ -96,9 +96,8 @@ def id_(self) -> int | None:
 
 class Bot(InteractionBot):
     def __init__(self, *args, **kwargs):
-        intents = disnake.Intents.default()
-        intents.members = True
-        intents.reactions = True  # for on_reaction_add event
+        intents = disnake.Intents.all()
+        intents.message_content = False
 
         self.cache = Cache()
 
