@@ -57,7 +57,7 @@ async def startup():
     bot.logger.debug("Connecting to database")
 
     try:
-        await prisma.connect()
+        await prisma.connect(timeout=30)
 
         discord_token = os.getenv("DISCORD_TOKEN")
 
