@@ -50,8 +50,11 @@ async def load_cogs():
 
 @app.on_event("startup")
 async def startup():
+    bot.logger.debug("Loading environment variables")
     load_env()
+    bot.logger.debug("Loading cogs")
     await load_cogs()
+    bot.logger.debug("Connecting to database")
 
     try:
         await prisma.connect()
