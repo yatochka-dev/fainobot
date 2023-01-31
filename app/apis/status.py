@@ -17,11 +17,13 @@ async def status(bot: Bot = Depends(get_bot_from_request)):
         "text": sum(1 for c in bot.get_all_channels() if isinstance(c, disnake.TextChannel)),
         "voice": sum(1 for c in bot.get_all_channels() if isinstance(c, disnake.VoiceChannel)),
     }
-    voice_connections = len(bot.voice_clients)
+    # voice_connections = len(bot.voice_clients)
+
+    total_commands_invoked = await bot.prisma.invokedslashcommand.count()
 
     return {
         "servers": servers,
         "online_users": online_users,
         "channels": channels,
-        "voice_connections": voice_connections,
+        "total_commands_invoked": total_commands_invoked,
     }
