@@ -7,7 +7,7 @@ class CacheService(AppService):
 
     async def get(
             self,
-            key: str,
+            key: Any,
             *,
             default: Any = None,
             namespace: str = None,
@@ -42,6 +42,12 @@ class CacheService(AppService):
             keys: list[str] = None,
             skip_nulls: bool = False,
     ):
+        data = self.bot.cache.multi_get(namespace=namespace, keys=keys)
+        if not data:
+            return []
+
+
+
         return [
             clean for clean in await self.bot.cache.multi_get(namespace=namespace, keys=keys) if clean or not skip_nulls
         ]

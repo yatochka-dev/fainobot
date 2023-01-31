@@ -8,6 +8,7 @@ import disnake.mixins
 import pydantic.main
 from aiocache import Cache
 from disnake.ext.commands import InteractionBot
+from prisma import Prisma
 from pydantic import BaseSettings
 
 from .db import prisma
@@ -104,7 +105,7 @@ class Bot(InteractionBot):
         self.APP_SETTINGS = AppSettings()
         self.BASE_DIR = Path(__file__).resolve().parent.parent
         self.logger = logger
-        self.prisma = prisma
+        self.prisma: Prisma = prisma
         self.disnake_logger = disnake_logger
 
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
@@ -123,3 +124,4 @@ class Bot(InteractionBot):
             emoji=disnake.utils.get(self.emojis, name=f"deleteMessageEmoji{random.randint(1, 2)}")
                   or "❌",
         )
+

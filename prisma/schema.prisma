@@ -108,6 +108,15 @@ model Role {
     collectType CollectType @default(noCollect)
     collectFixedAmount Int @default(10)
     collectPercentageAmount Int @default(10)
+
+    items Item[] @relation("ItemRolesGive", fields: [itemsIds], references: [id])
+    itemsIds String[] @db.ObjectId
+
+    itemsRequired Item[] @relation("ItemRolesRequired", fields: [itemsRequiredIds], references: [id])
+    itemsRequiredIds String[] @db.ObjectId
+
+    itemsRemove Item[] @relation("ItemRolesRemove", fields: [itemsRemoveIds], references: [id])
+    itemsRemoveIds String[] @db.ObjectId
 }
 
 
@@ -135,7 +144,20 @@ model Item {
 
     // can be bought only until 
     availableUntil DateTime?
-    
+
+
+    // Roles that will be given to user after buying
+    rolesGive Role[] @relation("ItemRolesGive", fields: [rolesGiveIds], references: [snowflake])
+    rolesGiveIds String[] 
+
+    // Roles that will be removed from user after buying
+    rolesRemove Role[] @relation("ItemRolesRemove", fields: [rolesRemoveIds], references: [snowflake])
+    rolesRemoveIds String[]
+
+    // Roles that required to buy this item
+    rolesRequired Role[] @relation("ItemRolesRequired", fields: [rolesRequiredIds], references: [snowflake])
+    rolesRequiredIds String[]
+
     inventoryItems InventoryItem[]
 }
 
@@ -147,6 +169,17 @@ model InventoryItem {
 
     owner Member @relation(fields: [ownerId], references: [id])
     ownerId String @db.ObjectId   
+}
+
+
+// Statistics 
+model InvokedSlashCommand {
+    interaction_id String @id @map("_id")
+    command_name String
+    guild_id String
+    user_id String
+    channel_id String
+    created_at DateTime @default(now())
 }
 
 enum Language {

@@ -36,4 +36,10 @@ class CacheNamespaces(Enum):
     member_message_cooldown = "message_cooldown"
     member_reaction_cooldown = "reaction_cooldown"
 
+    # bot's statistics
+
+    slash_commands_statistics = "slash_commands_statistics"
+
+
+
 
