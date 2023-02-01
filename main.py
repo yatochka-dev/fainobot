@@ -61,8 +61,8 @@ async def startup():
     discord_token = os.getenv("DISCORD_TOKEN")
 
     # Print message with each logger level
-
-    bot.logger.info(f"Starting bot in {os.getenv('STATE_NAME').title()} mode.")
+    state_name = os.getenv("STATE_NAME") or "Production"
+    bot.logger.info(f"Starting bot in {state_name.title()} mode.")
 
     if isinstance(discord_token, str) and len(discord_token) > 5:
         asyncio.create_task(bot.start(discord_token))
