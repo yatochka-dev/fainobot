@@ -1,4 +1,6 @@
 .env.development
 .env.production
+.env
+/prisma/dev.db
 /venv
 /.idea/
