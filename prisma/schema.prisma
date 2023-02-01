@@ -159,6 +159,8 @@ model Item {
     rolesRequiredIds String[]
 
     inventoryItems InventoryItem[]
+
+    @@unique([guildId, title])
 }
 
 

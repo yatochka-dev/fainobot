@@ -111,7 +111,7 @@ class Bot(InteractionBot):
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
         pydantic.main.BaseModel.id_ = id_  # noqa
 
-        super().__init__(*args, **kwargs, intents=intents)
+        super().__init__(*args, **kwargs, intents=intents, reload=self.APP_SETTINGS.TESTING)
 
     @property
     def now(self):
