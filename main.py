@@ -64,7 +64,7 @@ async def startup():
     state_name = os.getenv("STATE_NAME") or "Production"
     bot.logger.info(f"Starting bot in {state_name.title()} mode.")
 
-    if isinstance(discord_token, str) and len(discord_token) > 5:
+    if isinstance(discord_token, str) and len(discord_token) > 0:
         asyncio.create_task(bot.start(discord_token))
     else:
         bot.logger.critical("No Discord token found!")
