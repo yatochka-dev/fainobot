@@ -56,22 +56,20 @@ async def startup():
     await load_cogs()
     bot.logger.debug("Connecting to database")
 
-    try:
-        await prisma.connect(timeout=30)
+    await prisma.connect(timeout=30)
 
-        discord_token = os.getenv("DISCORD_TOKEN")
+    discord_token = os.getenv("DISCORD_TOKEN")
 
-        # Print message with each logger level
+    # Print message with each logger level
 
-        bot.logger.info(f"Starting bot in {os.getenv('STATE_NAME').title()} mode.")
+    bot.logger.info(f"Starting bot in {os.getenv('STATE_NAME').title()} mode.")
 
-        if isinstance(discord_token, str) and len(discord_token) > 5:
-            asyncio.create_task(bot.start(discord_token))
-        else:
-            bot.logger.critical("No Discord token found!")
+    if isinstance(discord_token, str) and len(discord_token) > 5:
+        asyncio.create_task(bot.start(discord_token))
+    else:
+        bot.logger.critical("No Discord token found!")
 
-    except:  # noqa
-        await prisma.disconnect()
+
 
 
 @app.on_event("shutdown")
