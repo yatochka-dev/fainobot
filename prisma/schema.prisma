@@ -5,8 +5,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mongodb"
-  url      = "mongodb+srv://yatochka:bsm4pROS9KjzuxdR@fainodevdb.bghgmn9.mongodb.net/FainoDevDB?retryWrites=true&w=majority"
+  provider = "postgresql"
+  url      = "postgresql://postgres:LxehFXkZqhjEKVacNIcJ@containers-us-west-101.railway.app:6628/railway"
 }
 
 
@@ -14,7 +14,7 @@ datasource db {
 // This model represents a discord guild
 
 model Guild {
-    snowflake String @id @map("_id")
+    snowflake String @id 
     members   Member[]
     roles     Role[]
     items    Item[]
@@ -27,15 +27,16 @@ model Guild {
 // This model represents discord's user
 
 model User {
-    snowflake String @id @map("_id") 
+    snowflake String @id 
     members   Member[] 
 } 
 
 // This model represents a member of a guild, like user, but inside of a guild
  
 model Member {
+    id Int @id @default(autoincrement())
+
     // region Connecting
-    id String @id @default(auto()) @map("_id") @db.ObjectId
     user   User  @relation(fields: [userId], references: [snowflake])
     userId String 
     guild   Guild  @relation(fields: [guildId], references: [snowflake])
@@ -50,12 +51,14 @@ model Member {
     // region Inventory
     inventoryItems InventoryItem[]
     // endregion
+
+    @@unique([userId, guildId])
 }
 
 model GuildSettings {
     // region Connecting
     guild   Guild  @relation(fields: [guildId], references: [snowflake], onDelete: Cascade)
-    guildId String @id @map("_id")
+    guildId String @id 
     // endregion
 
     // region messages
@@ -100,7 +103,7 @@ model GuildSettings {
 
 model Role {
 
-    snowflake String @id @map("_id")
+    snowflake String @id 
 
     guild   Guild  @relation(fields: [guildId], references: [snowflake])
     guildId String
@@ -108,34 +111,25 @@ model Role {
     collectType CollectType @default(noCollect)
     collectFixedAmount Int @default(10)
     collectPercentageAmount Int @default(10)
-
-    items Item[] @relation("ItemRolesGive", fields: [itemsIds], references: [id])
-    itemsIds String[] @db.ObjectId
-
-    itemsRequired Item[] @relation("ItemRolesRequired", fields: [itemsRequiredIds], references: [id])
-    itemsRequiredIds String[] @db.ObjectId
-
-    itemsRemove Item[] @relation("ItemRolesRemove", fields: [itemsRemoveIds], references: [id])
-    itemsRemoveIds String[] @db.ObjectId
 }
 
 
 model Item {
     // id
-    id String @id @default(auto()) @map("_id") @db.ObjectId
+    id Int @id @default(autoincrement())
 
     // guild relation
     guild   Guild  @relation(fields: [guildId], references: [snowflake])
     guildId String
 
     // title with max length 100 chars
-    title String @db.String
+    title String @db.VarChar(200)
 
     // description with max length 1000 chars
-    description String? @db.String
+    description String? @db.Text
 
     // reply message with max length 500 chars
-    replyMessage String? @db.String
+    replyMessage String? @db.Text
 
     // price
     price Int
@@ -145,19 +139,6 @@ model Item {
     // can be bought only until 
     availableUntil DateTime?
 
-
-    // Roles that will be given to user after buying
-    rolesGive Role[] @relation("ItemRolesGive", fields: [rolesGiveIds], references: [snowflake])
-    rolesGiveIds String[] 
-
-    // Roles that will be removed from user after buying
-    rolesRemove Role[] @relation("ItemRolesRemove", fields: [rolesRemoveIds], references: [snowflake])
-    rolesRemoveIds String[]
-
-    // Roles that required to buy this item
-    rolesRequired Role[] @relation("ItemRolesRequired", fields: [rolesRequiredIds], references: [snowflake])
-    rolesRequiredIds String[]
-
     inventoryItems InventoryItem[]
 
     @@unique([guildId, title])
@@ -166,17 +147,19 @@ model Item {
 
 
 model InventoryItem {
+    id Int @id @default(autoincrement())
+
     original Item @relation(fields: [originalId], references: [id])
-    originalId String @id @db.ObjectId @map("_id") 
+    originalId Int
 
     owner Member @relation(fields: [ownerId], references: [id])
-    ownerId String @db.ObjectId   
+    ownerId Int 
 }
 
 
 // Statistics 
 model InvokedSlashCommand {
-    interaction_id String @id @map("_id")
+    interaction_id String @id 
     command_name String
     guild_id String
     user_id String
