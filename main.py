@@ -52,11 +52,15 @@ async def load_cogs():
 async def startup():
     bot.logger.debug("Loading environment variables")
     load_env()
+    bot.logger.debug("Loaded environment variables")
+
     bot.logger.debug("Loading cogs")
     await load_cogs()
-    bot.logger.debug("Connecting to database")
+    bot.logger.debug("Loaded cogs")
 
+    bot.logger.debug("Connecting to database")
     await prisma.connect()
+    bot.logger.debug("Connected to database")
 
     discord_token = os.getenv("DISCORD_TOKEN")
 
