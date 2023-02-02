@@ -59,7 +59,7 @@ class PaginationView(BaseView):
     def _update_state(self) -> None:
         if len(self.pages) == 1:
             self.clear_items()
-            self.stop()
+            self.add_item(self.remove)
 
         self.first_page.disabled = self.prev_page.disabled = self.current_page == 0
         self.last_page.disabled = self.next_page.disabled = self.current_page == len(self.pages) - 1

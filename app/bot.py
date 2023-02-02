@@ -54,6 +54,10 @@ class MMLength(NamedTuple):
 
 class AppSettings(BaseSettings):
     TESTING: bool = True if isinstance(os.environ.get("TESTING"), str) else False
+    TESTING_GUILDS: list[int] = [
+        1007712151160488007,     # community
+    ]
+
     TIMEZONE = datetime.timezone(offset=datetime.timedelta(hours=3), name="UTC")
 
     github_link = "https://github.com/yatochka-dev/discord-bot-boilerplate"
@@ -111,7 +115,7 @@ class Bot(InteractionBot):
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
         pydantic.main.BaseModel.id_ = id_  # noqa
 
-        super().__init__(*args, **kwargs, intents=intents, reload=self.APP_SETTINGS.TESTING)
+        super().__init__(*args, **kwargs, intents=intents, reload=self.APP_SETTINGS.TESTING, test_guilds=self.APP_SETTINGS.TESTING_GUILDS if self.APP_SETTINGS.TESTING else None)
 
     @property
     def now(self):

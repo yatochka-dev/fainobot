@@ -30,6 +30,7 @@ class Embed:
     BASE_TIMEZONE = Settings.TIMEZONE
     BASE_AUTHOR_ICON_URL = Settings.ICON_URL
 
+
     def __init__(
         self,
         user: DiscordUtilizer,
@@ -102,4 +103,8 @@ class Embed:
 
     def __str__(self):
         return str(self.embed)
+
+    @classmethod
+    def create_field(cls, name, value, inline=False):
+        return EmbedField(name, value, inline)
 
