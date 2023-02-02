@@ -94,8 +94,8 @@ class Admin(Cog):
         guild_ids=Settings.TESTING_GUILDS,
         name="leave",
     )
-    async def leave_guild(self, inter: CommandInteraction, snowflake: int):
-        guild = self.bot.get_guild(snowflake)
+    async def leave_guild(self, inter: CommandInteraction, snowflake: str):
+        guild = self.bot.get_guild(int(snowflake))
 
         if not guild:
             return await inter.send("Guild not found")
