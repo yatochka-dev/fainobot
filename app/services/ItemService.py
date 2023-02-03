@@ -171,8 +171,8 @@ class ItemService(AppService):
             self,
             item: models.Item,
             user: DiscordUtilizer,
-            title: str = "Item",
-            desc: str = "Id of this item is `{item.id}`, you can use it when asking for support.",
+            title: str = "Item `#{item.index}`",
+            desc: str = None,
     ) -> Embed:
 
         fields = [
@@ -192,8 +192,8 @@ class ItemService(AppService):
             )
 
         embed = Embed(
-            title=title,
-            description=desc.format(item=item),
+            title=title.format(item=item) if title else None,
+            description=desc.format(item=item) if desc else None,
             fields=fields,
             user=user or self.bot,
         )
