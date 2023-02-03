@@ -8,6 +8,7 @@ import disnake.mixins
 import pydantic.main
 from aiocache import Cache
 from disnake.ext.commands import InteractionBot
+from prisma import Prisma
 from pydantic import BaseSettings
 
 from .db import prisma
@@ -52,7 +53,11 @@ class MMLength(NamedTuple):
 
 
 class AppSettings(BaseSettings):
-    TESTING: bool = os.environ.get("TESTING", False)
+    TESTING: bool = True if isinstance(os.environ.get("TESTING"), str) else False
+    TESTING_GUILDS: list[int] = [
+        1007712151160488007,     # community
+    ]
+
     TIMEZONE = datetime.timezone(offset=datetime.timedelta(hours=3), name="UTC")
 
     github_link = "https://github.com/yatochka-dev/discord-bot-boilerplate"
@@ -96,22 +101,21 @@ def id_(self) -> int | None:
 
 class Bot(InteractionBot):
     def __init__(self, *args, **kwargs):
-        intents = disnake.Intents.default()
-        intents.members = True
-        intents.reactions = True  # for on_reaction_add event
+        intents = disnake.Intents.all()
+        intents.message_content = False
 
         self.cache = Cache()
 
         self.APP_SETTINGS = AppSettings()
         self.BASE_DIR = Path(__file__).resolve().parent.parent
         self.logger = logger
-        self.prisma = prisma
+        self.prisma: Prisma = prisma
         self.disnake_logger = disnake_logger
 
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
         pydantic.main.BaseModel.id_ = id_  # noqa
 
-        super().__init__(*args, **kwargs, intents=intents)
+        super().__init__(*args, **kwargs, intents=intents, reload=self.APP_SETTINGS.TESTING, test_guilds=self.APP_SETTINGS.TESTING_GUILDS if self.APP_SETTINGS.TESTING else None)
 
     @property
     def now(self):
@@ -124,3 +128,4 @@ class Bot(InteractionBot):
             emoji=disnake.utils.get(self.emojis, name=f"deleteMessageEmoji{random.randint(1, 2)}")
                   or "❌",
         )
+

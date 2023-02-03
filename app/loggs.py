@@ -76,7 +76,7 @@ class CustomFormatter(logging.Formatter):
 
 logger = logging.getLogger("discord_bot")
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(stream=sys.stdout)
+handler = logging.StreamHandler(stream=sys.stderr)
 handler.setFormatter(CustomFormatter())
 logger.addHandler(handler)
 

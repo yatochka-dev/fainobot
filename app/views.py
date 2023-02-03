@@ -59,7 +59,7 @@ class PaginationView(BaseView):
     def _update_state(self) -> None:
         if len(self.pages) == 1:
             self.clear_items()
-            self.stop()
+            self.add_item(self.remove)
 
         self.first_page.disabled = self.prev_page.disabled = self.current_page == 0
         self.last_page.disabled = self.next_page.disabled = self.current_page == len(self.pages) - 1
@@ -128,6 +128,7 @@ class SendModalWithButtonView(BaseView):
             button_label: str = "Open modal",
             button_style: disnake.ButtonStyle = disnake.ButtonStyle.blurple,
             button_emoji: str = None,
+            include_cancel_button: bool = False,
             **kwargs,
     ):
         self.modal = modal
@@ -135,11 +136,15 @@ class SendModalWithButtonView(BaseView):
         self.button_label = button_label
         self.button_style = button_style
         self.button_emoji = button_emoji
+        self.include_cancel_button = include_cancel_button
         super().__init__(**kwargs)
 
         self._update_state()
 
     def _update_state(self) -> None:
+
+        if not self.include_cancel_button:
+            self.remove_item(self.remove)
 
         for item in self.children:
             if isinstance(item, disnake.ui.Button) and item.custom_id == "send":
@@ -151,4 +156,10 @@ class SendModalWithButtonView(BaseView):
     async def send(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
         await inter.response.send_modal(self.modal)
         await inter.edit_original_response(view=None)
+        self.stop()
+
+    @disnake.ui.button(emoji="🗑️", style=disnake.ButtonStyle.red, custom_id="delete")
+    async def remove(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        await inter.response.defer()
+        await inter.delete_original_message()
         self.stop()

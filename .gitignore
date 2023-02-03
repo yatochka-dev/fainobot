@@ -1,6 +1,6 @@
 .env.development
 .env.production
-/prisma/migrations/
+.env
 /prisma/dev.db
 /venv
 /.idea/

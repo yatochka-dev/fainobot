@@ -13,6 +13,8 @@ class AppService:
 
         if request is None:
             pass
+        elif isinstance(request, Bot):
+            self.bot = request
         else:
             self.bot = get_bot_from_request(request)
 

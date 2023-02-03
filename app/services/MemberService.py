@@ -132,8 +132,6 @@ class MemberService(CRUDXService):
                 where={"id": to_member_db_id}, data={"money": {"increment": amount}}
             )
 
-
-
             # db.member.update_many(
             #     where={
             #         "guild": {"snowflake": self.to_safe_snowflake(from_member.guild.id)},
@@ -163,5 +161,77 @@ class MemberService(CRUDXService):
         return await self.bot.prisma.member.find_unique(
             where={
                 "id": from_member_db_id,
+            },
+        )
+
+    async def member_buy_item(
+            self,
+            member: disnake.Member,
+            item: models.Item,
+    ) -> models.InventoryItem:
+        member = await self.bot.prisma.member.find_first(
+            where={
+                "guild": {"snowflake": self.to_safe_snowflake(member.guild.id)},
+                "user": {"snowflake": self.to_safe_snowflake(member.id)},
+            },
+        )
+
+        item = await self.bot.prisma.item.find_unique(
+            where={
+                "id": item.id,
+            },
+        )
+
+        if member.money < item.price:
+            raise ValueError("member does not have enough money")
+
+        if item.stock is not None and item.stock < 1:
+            raise ValueError("item is out of stock")
+
+        if item.availableUntil is not None and item.availableUntil < self.bot.now:
+            raise ValueError("item is no longer available")
+
+        async with self.bot.prisma.batch_() as db:
+            db.member.update(
+                where={
+                    "id": member.id,
+                },
+                data={
+                    "money": {"decrement": item.price},
+                },
+            )
+
+            db.item.update(
+                where={
+                    "id": item.id,
+                },
+                data={
+                    "stock": {"decrement": 1},
+                },
+            )
+
+            db.inventoryitem.create(
+                data={
+                    "owner": {
+                        "connect": {
+                            "id": member.id,
+                        },
+                    },
+                    "original": {
+                        "connect": {
+                            "id": item.id,
+                        },
+                    },
+                },
+            )
+
+        return await self.bot.prisma.inventoryitem.find_first(
+            where={
+                "owner": {
+                    "id": member.id,
+                },
+                "original": {
+                    "id": item.id,
+                },
             },
         )

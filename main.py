@@ -19,13 +19,6 @@ bot = Bot()
 app.state.bot = bot
 
 
-@bot.slash_command(
-    name="super"
-)
-async def super_cmd(inter: CommandInter):
-    await inter.send("Gay")
-
-
 def load_env():
     environments = {
         "dev": ".env.development",
@@ -50,25 +43,30 @@ async def load_cogs():
 
 @app.on_event("startup")
 async def startup():
+    bot.logger.debug("Loading environment variables")
     load_env()
+    bot.logger.debug("Loaded environment variables")
+
+    bot.logger.debug("Loading cogs")
     await load_cogs()
+    bot.logger.debug("Loaded cogs")
 
-    try:
-        await prisma.connect()
+    bot.logger.debug("Connecting to database")
+    await prisma.connect()
+    bot.logger.debug("Connected to database")
 
-        discord_token = os.getenv("DISCORD_TOKEN")
+    discord_token = os.getenv("DISCORD_TOKEN")
 
-        # Print message with each logger level
+    # Print message with each logger level
+    state_name = os.getenv("STATE_NAME") or "Production"
+    bot.logger.info(f"Starting bot in {state_name.title()} mode.")
 
-        bot.logger.info(f"Starting bot in {os.getenv('STATE_NAME').title()} mode.")
+    if isinstance(discord_token, str) and len(discord_token) > 0:
+        asyncio.create_task(bot.start(discord_token))
+    else:
+        bot.logger.critical("No Discord token found!")
 
-        if isinstance(discord_token, str) and len(discord_token) > 5:
-            asyncio.create_task(bot.start(discord_token))
-        else:
-            bot.logger.critical("No Discord token found!")
 
-    except:  # noqa
-        await prisma.disconnect()
 
 
 @app.on_event("shutdown")

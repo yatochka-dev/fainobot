@@ -33,7 +33,7 @@ class MemberVoiceMoneyCog(Cog, MemberCacheService, GuildService, MemberService):
             return []
 
         def get_guild(guild: models.Guild):
-            g = self.bot.get_guild(guild.id)
+            g = self.bot.get_guild(int(guild.snowflake))
 
             return g, guild.settings
 

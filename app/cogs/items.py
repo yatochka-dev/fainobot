@@ -47,6 +47,7 @@ class ItemsManagement(Cog, ItemService):
             button_style=disnake.ButtonStyle.green,
             bot=self.bot,
             user=inter.author,
+            include_cancel_button=True,
         )
 
         embed = Embed(
@@ -54,7 +55,7 @@ class ItemsManagement(Cog, ItemService):
             description="Click the button below to start creating an item",
             fields=[
                 EmbedField(
-                    name="Current title",
+                    name="Title",
                     value=title[:100],
                 )
             ],
@@ -73,9 +74,9 @@ class ItemsManagement(Cog, ItemService):
             description="Item that will be deleted.",
         ),
     ):
-        item_db = await self.get_item_by_title(inter.guild, item)
+        item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, f"Item with title `{item}` not found", title="Not found item")
+            raise BotException(500, f"Item `{item}` not found", title="Not found item")
 
         confirmation_embed = Embed(
             title="Confirmation",
@@ -127,9 +128,9 @@ class ItemsManagement(Cog, ItemService):
             description="Item that will be retrieved.",
         ),
     ):
-        item_db = await self.get_item_by_title(inter.guild, item)
+        item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, f"Item with title `{item}` not found", title="Not found item")
+            raise BotException(500, f"Item `{item}` not found", title="Not found item")
 
         embed = await self.item_to_embed(item_db, user=inter.user)
 
@@ -174,12 +175,7 @@ class ItemsManagement(Cog, ItemService):
         if not more_that_zero:
             return []
 
-        titles = [i.title[:100] or "#Not found item" for i in items]
-        # @todo: Fix this shit
-        # when there's two or more items with the same title, it will return the first of them
-        # and it's not good
-
-        # possible solution: add item id to the title
+        titles = [f"#{i.index} - {i.title}"[:100] or "#Not found item" for i in items]
 
         return titles
 

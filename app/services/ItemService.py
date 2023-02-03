@@ -1,3 +1,5 @@
+import re
+
 import disnake
 from prisma import models
 
@@ -21,30 +23,65 @@ class ItemService(AppService):
         self.bot.logger.debug(f"Creating item with data: {data!r}")
 
         count = await self.bot.prisma.item.count(where={"guild": {"snowflake": guild.snowflake}})
+        guild: models.Guild = await self.bot.prisma.guild.find_unique(
+            where={"snowflake": self.to_safe_snowflake(guild.id)})
 
         if count >= MAX_ITEMS_PER_GUILD:
             raise ValueError(
                 f"This guild has reached the maximum amount of items ({MAX_ITEMS_PER_GUILD})"
             )
 
-        item = await self.bot.prisma.item.create(
+        current_index = guild.items_index
+
+        await self.bot.prisma.guild.update(
+            where={
+                "snowflake": guild.snowflake,
+            },
             data={
-                "guild": {
-                    "connect": {
-                        "snowflake": self.to_safe_snowflake(guild.id),
-                    },
-                },
-                "title": data.title,
-                "description": data.description,
-                "replyMessage": data.reply,
-                "price": data.price,
-                "stock": data.stock,
-                "availableUntil": data.available_time,
+                "items_index": {"increment": 1},
+                "items": {
+                    "create": [
+                        {
+                            "title": data.title,
+                            "description": data.description,
+                            "replyMessage": data.reply,
+                            "price": data.price,
+                            "stock": data.stock,
+                            "availableUntil": data.available_time,
+                            "index": current_index,
+                        }
+                    ]
+                }
             },
         )
-        return item
 
-    async def update_item(self, item_id: str, data: ValidItemDataDANT):
+        # item = await self.bot.prisma.item.create(
+        #     data={
+        #         "guild": {
+        #             "connect": {
+        #                 "snowflake": self.to_safe_snowflake(guild.id),
+        #             },
+        #         },
+        #         "title": data.title,
+        #         "description": data.description,
+        #         "replyMessage": data.reply,
+        #         "price": data.price,
+        #         "stock": data.stock,
+        #         "availableUntil": data.available_time,
+        #     },
+        # )
+        # return item
+
+        return await self.bot.prisma.item.find_first(
+            where={
+                "guild": {
+                    "snowflake": guild.snowflake,
+                },
+                "index": current_index,
+            },
+        )
+
+    async def update_item(self, item_id: int, data: ValidItemDataDANT):
         self.bot.logger.debug(f"Updating item with id {item_id} data: {data!r}")
         updated = await self.bot.prisma.item.update(
             where={
@@ -56,12 +93,12 @@ class ItemService(AppService):
                 "replyMessage": data.reply,
                 "stock": data.stock,
                 "price": data.price,
-                "available_time": data.available_time,
+                "availableUntil": data.available_time,
             },
         )
         return updated
 
-    async def delete_item(self, item_id: str):
+    async def delete_item(self, item_id: int):
         self.bot.logger.debug(f"Deleting item with id: {item_id}")
         await self.bot.prisma.item.delete(
             where={
@@ -70,7 +107,7 @@ class ItemService(AppService):
         )
         return None
 
-    async def get_item(self, item_id: str) -> models.Item:
+    async def get_item(self, item_id: int) -> models.Item:
         self.bot.logger.debug(f"Getting item with id: {item_id}")
         item = await self.bot.prisma.item.find_unique(
             where={
@@ -91,7 +128,7 @@ class ItemService(AppService):
         return items
 
     async def get_items_by_title(
-        self, guild: disnake.Guild, title: str
+            self, guild: disnake.Guild, title: str
     ) -> tuple[list[models.Item], bool]:
         items = await models.Item.prisma().find_many(
             where={
@@ -102,10 +139,28 @@ class ItemService(AppService):
 
         return items, len(items) >= 1
 
-    async def get_item_by_title(self, guild: disnake.Guild, title: str):
+    async def get_item_from_autocomplete(self, guild: disnake.Guild, title: str):
+        # Autocomplete gives string
+        # Structure: "#<item.index> - <item.title>
+        # Example: "#1 - Item 1"
+        # We need to get the index from the string using regex
+
+        self.bot.logger.debug(f"Getting item from autocomplete: {title!r}")
+
+        regex = re.compile(r"#(\d+) - (.+)")
+
+        index = regex.search(title).group(1)
+
+        self.bot.logger.debug(f"Index: {index!r}")
+
+        if not index:
+            return None
+
+        index = int(index)
+
         item = await self.bot.prisma.item.find_first(
             where={
-                "title": {"contains": title},
+                "index": {"equals": index},
                 "guild": {"snowflake": self.to_safe_snowflake(guild.id)},
             }
         )
@@ -113,11 +168,11 @@ class ItemService(AppService):
         return item
 
     async def item_to_embed(
-        self,
-        item: models.Item,
-        user: DiscordUtilizer,
-        title: str = "Item",
-        desc: str = "Id of this item is `{item.id}`, you can use it when asking for support.",
+            self,
+            item: models.Item,
+            user: DiscordUtilizer,
+            title: str = "Item `#{item.index}`",
+            desc: str = None,
     ) -> Embed:
 
         fields = [
@@ -137,8 +192,8 @@ class ItemService(AppService):
             )
 
         embed = Embed(
-            title=title,
-            description=desc.format(item=item),
+            title=title.format(item=item) if title else None,
+            description=desc.format(item=item) if desc else None,
             fields=fields,
             user=user or self.bot,
         )
