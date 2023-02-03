@@ -16,6 +16,7 @@ async def status(bot: Bot = Depends(get_bot_from_request)):
     channels = {
         "text": sum(1 for c in bot.get_all_channels() if isinstance(c, disnake.TextChannel)),
         "voice": sum(1 for c in bot.get_all_channels() if isinstance(c, disnake.VoiceChannel)),
+        "other": sum(1 for c in bot.get_all_channels() if not isinstance(c, (disnake.TextChannel, disnake.VoiceChannel))),
     }
     # voice_connections = len(bot.voice_clients)
 
@@ -24,6 +25,6 @@ async def status(bot: Bot = Depends(get_bot_from_request)):
     return {
         "servers": servers,
         "online_users": online_users,
-        "channels": channels,
         "total_commands_invoked": total_commands_invoked,
+        "channels": channels,
     }

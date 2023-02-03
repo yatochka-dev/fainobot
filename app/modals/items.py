@@ -78,9 +78,9 @@ class CreateItemModal(disnake.ui.Modal):
             await interaction.response.send_message("Price must be a number", ephemeral=True)
             return
 
-        stock_raw = interaction.text_values["stock"]
+        stock_raw: str = interaction.text_values["stock"]
         if stock_raw:
-            if stock_raw.is_digit():
+            if stock_raw.isdigit():
                 stock = int(stock_raw)
             else:
                 await interaction.response.send_message("Stock must be a number", ephemeral=True)

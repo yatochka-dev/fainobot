@@ -169,32 +169,52 @@ class MemberService(CRUDXService):
             member: disnake.Member,
             item: models.Item,
     ) -> models.InventoryItem:
-        member = await self.bot.prisma.member.find_first(
+        member_db = await self.bot.prisma.member.find_first(
             where={
                 "guild": {"snowflake": self.to_safe_snowflake(member.guild.id)},
                 "user": {"snowflake": self.to_safe_snowflake(member.id)},
             },
         )
 
-        item = await self.bot.prisma.item.find_unique(
+        item: models.Item = await self.bot.prisma.item.find_unique(
             where={
                 "id": item.id,
             },
         )
 
-        if member.money < item.price:
-            raise ValueError("member does not have enough money")
+        if member_db.money < item.price:
+            raise ValueError("not_enough_money")
 
         if item.stock is not None and item.stock < 1:
-            raise ValueError("item is out of stock")
+            raise ValueError("out_of_stock")
 
         if item.availableUntil is not None and item.availableUntil < self.bot.now:
-            raise ValueError("item is no longer available")
+            raise ValueError("not_available")
+
+        try:
+            new_inventory_item = await self.bot.prisma.inventoryitem.create(
+                data={
+                    "owner": {
+                        "connect": {
+                            "id": member_db.id,
+                        },
+                    },
+                    "original": {
+                        "connect": {
+                            "id": item.id,
+                        },
+                    },
+                },
+            )
+        except Exception as e:
+            self.bot.logger.error(f"Error buying item {item.title} ({item.id}) for {member.name} ({member_db.id})")
+            raise e
 
         async with self.bot.prisma.batch_() as db:
+
             db.member.update(
                 where={
-                    "id": member.id,
+                    "id": member_db.id,
                 },
                 data={
                     "money": {"decrement": item.price},
@@ -210,28 +230,12 @@ class MemberService(CRUDXService):
                 },
             )
 
-            db.inventoryitem.create(
-                data={
-                    "owner": {
-                        "connect": {
-                            "id": member.id,
-                        },
-                    },
-                    "original": {
-                        "connect": {
-                            "id": item.id,
-                        },
-                    },
-                },
-            )
-
-        return await self.bot.prisma.inventoryitem.find_first(
+        return await self.bot.prisma.inventoryitem.find_unique(
             where={
-                "owner": {
-                    "id": member.id,
-                },
-                "original": {
-                    "id": item.id,
-                },
+                "id": new_inventory_item.id,
+            },
+            include={
+                "owner": True,
+                "original": True,
             },
         )

@@ -128,13 +128,46 @@ class ItemService(AppService):
         return items
 
     async def get_items_by_title(
-            self, guild: disnake.Guild, title: str
+            self, guild: disnake.Guild, title: str, only_available: bool = True
     ) -> tuple[list[models.Item], bool]:
-        items = await models.Item.prisma().find_many(
-            where={
-                "title": {"contains": title},
-                "guild": {"snowflake": self.to_safe_snowflake(guild.id)},
+
+        if only_available:
+            where = {
+                'AND': [
+                    {'title': {'contains': title}},
+                    {
+                        'OR': [
+                            {'stock': {'gt': 0}},
+                            {'stock': None}
+                        ]
+                    },
+                    {
+                        'OR': [
+                            {'availableUntil': {'gt': self.bot.now}},
+                            {'availableUntil': None}
+                        ]
+                    },
+                    {
+                        "guild": {
+                            "snowflake": self.to_safe_snowflake(guild.id)
+                        }
+                    }
+                ]
             }
+        else:
+            where = {
+                'AND': [
+                    {'title': {'contains': title}},
+                    {
+                        "guild": {
+                            "snowflake": self.to_safe_snowflake(guild.id)
+                        }
+                    }
+                ]
+            }
+
+        items = await models.Item.prisma().find_many(
+            where=where
         )
 
         return items, len(items) >= 1
@@ -186,7 +219,8 @@ class ItemService(AppService):
             fields.append(
                 EmbedField(
                     name="Available until",
-                    value=f"{disnake.utils.format_dt(item.availableUntil)}",
+                    value=f"{disnake.utils.format_dt(item.availableUntil)} ("
+                          f"{disnake.utils.format_dt(item.availableUntil, 'R')})",
                     inline=False,
                 )
             )
@@ -199,3 +233,46 @@ class ItemService(AppService):
         )
 
         return embed
+
+    async def get_member_inventory(self, member: models.Member) -> list[models.InventoryItem]:
+        self.bot.logger.debug(f"Getting inventory for member: {member.id}")
+
+        inventory = await self.bot.prisma.inventoryitem.find_many(
+            where={
+                "owner": {
+                    "id": member.id,
+                },
+            },
+            include={
+                "original": True,
+            }
+        )
+
+        return inventory
+
+    async def get_items_for_use_autocomplete(self, title: str, member: models.Member):
+        # self.bot.logger.debug(f"Getting items for use autocomplete: {title!r}")
+        #
+        # regex = re.compile(r"#(\d+) - (.+)")
+        #
+        # index = regex.search(title).group(1)
+        #
+        # self.bot.logger.debug(f"Index: {index!r}")
+        #
+        # if not index:
+        #     return None
+        #
+        # index = int(index)
+        #
+        # item = await self.bot.prisma.inventoryitem.find_first(
+        #     where={
+        #         "original": {"index": {"equals": index}},
+        #         "owner": {"id": member.id},
+        #     },
+        #     include={
+        #         "original": True,
+        #     }
+        # )
+
+        # return item
+        raise NotImplementedError()
