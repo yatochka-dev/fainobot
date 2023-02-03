@@ -21,6 +21,9 @@ model Guild {
     language Language @default(en)
 
     settings GuildSettings?
+
+    // indexes
+    items_index Int @default(1)
 }
 
 
@@ -140,6 +143,8 @@ model Item {
     availableUntil DateTime?
 
     inventoryItems InventoryItem[]
+
+    index Int @default(1) 
 
     @@unique([guildId, title])
 }
