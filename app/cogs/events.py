@@ -49,6 +49,12 @@ class Events(Cog, GuildService, MemberService, RoleService):
         deleted = await self.clean_up_database_guilds()
         self.bot.logger.info(f"Cleaned up {deleted} guilds from database.")
 
+        await self.bot.cache.set("start_time", self.bot.now.timestamp())
+        self.bot.logger.info("-----------------------------------------")
+        self.bot.logger.info("Total guilds: " + str(len(self.bot.guilds)))
+        self.bot.logger.info("Total users: " + str(len(self.bot.users)))
+        self.bot.logger.info("-----------------------------------------")
+
     @Cog.listener(
         "on_guild_join",
     )

@@ -19,13 +19,6 @@ bot = Bot()
 app.state.bot = bot
 
 
-@bot.slash_command(
-    name="super"
-)
-async def super_cmd(inter: CommandInter):
-    await inter.send("Gay")
-
-
 def load_env():
     environments = {
         "dev": ".env.development",
