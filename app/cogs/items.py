@@ -80,7 +80,9 @@ class ItemsManagement(Cog, ItemService):
 
         confirmation_embed = Embed(
             title="Confirmation",
-            description=f"Are you sure you want to delete item `{item_db.title}`?\nThis action "
+            description=f"Are you sure you want to delete item `{item_db.title}`?\n "
+                        f"Already bought items will be deleted as well.\n"
+                        f"\nThis action "
             f"cannot be undone.\n\n\nP.S. Item parameters are listed below.",
             user=inter.user,
         ).info
@@ -170,7 +172,8 @@ class ItemsManagement(Cog, ItemService):
     async def item_delete_or_retrieve_or_edit_item_autocomplete(
         self, inter: CommandInteraction, item: str
     ):
-        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item)
+
+        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item, only_available=False)
 
         if not more_that_zero:
             return []

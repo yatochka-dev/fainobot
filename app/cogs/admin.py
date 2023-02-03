@@ -3,7 +3,6 @@ from disnake.ext.commands import Cog, is_owner, slash_command
 from app import Bot, Settings, Embed
 from app.services.cache.CacheService import CacheService
 from app.types import CommandInteraction
-from app.utils.embeds import create_embeds_from_fields
 from app.views import PaginationView
 
 
@@ -63,7 +62,8 @@ class Admin(Cog):
         fields = [
             Embed.create_field(
                 name=guild.name,
-                value=f"ID: {guild.id}\nOwner: {guild.owner} ({guild.id})\nMembers: {guild.member_count}",
+                value=f"ID: {guild.id}\nOwner: {guild.owner} ({guild.id})\nMembers: "
+                      f"{guild.member_count}",
                 inline=True
             )
             for guild in guilds
@@ -73,8 +73,7 @@ class Admin(Cog):
             user=inter.author,
             title="Guilds List",
         )
-        embeds = create_embeds_from_fields(
-            embed=embed,
+        embeds = embed.paginate(
             fields=fields,
             max_size=15,
             emb_style="default"
@@ -102,7 +101,28 @@ class Admin(Cog):
 
         await guild.leave()
 
-        await inter.send(f"Left guild {guild.name} ({guild.id}) ({guild.member_count})", components=self.bot.get_cancel_button(user=inter.author))
+        await inter.send(f"Left guild {guild.name} ({guild.id}) ({guild.member_count})",
+                         components=self.bot.get_cancel_button(user=inter.author))
+
+    @is_owner()
+    @slash_command(
+        guild_ids=Settings.TESTING_GUILDS,
+        name="add_money",
+    )
+    async def add_money(self, inter: CommandInteraction, amount: int, user: str):
+
+        data = await self.bot.prisma.member.update(
+            where={
+                "id": int(user)
+            },
+            data={
+                "money": {
+                    "increment": amount
+                }
+            }
+        )
+        await inter.send(f"Added {amount} to {user!r} ({data.money})")
+
 
 
 def setup(bot: Bot):

@@ -3,8 +3,31 @@ import datetime
 import disnake
 
 from app import Settings
-from app.loggs import logger
 from app.types import DiscordUtilizer
+
+
+def create_embeds_from_fields(
+        embed: "Embed", fields: list["EmbedField"], max_size: int = 6, emb_style: str = "default"
+) -> list["Embed"] | None:
+    """
+
+    @rtype: object
+    """
+    assert max_size <= 25, "Max size must be less or equal to 25"
+
+    embeds = []
+
+    chunks = disnake.utils.as_chunks(fields, max_size)
+    emb: disnake.Embed = getattr(embed, emb_style)
+    emb.clear_fields()
+    for chunk in chunks:
+        emb_c = emb.copy()
+        for field in chunk:
+            emb_c.add_field(name=field.name, value=field.value, inline=field.inline)
+
+        embeds.append(emb_c)
+
+    return embeds if embeds else None
 
 
 class EmbedField:
@@ -30,14 +53,13 @@ class Embed:
     BASE_TIMEZONE = Settings.TIMEZONE
     BASE_AUTHOR_ICON_URL = Settings.ICON_URL
 
-
     def __init__(
-        self,
-        user: DiscordUtilizer,
-        thumbnail: bool = False,
-        fields: list[EmbedField] | tuple[EmbedField] = (),
-        *args,
-        **kwargs,
+            self,
+            user: DiscordUtilizer,
+            thumbnail: bool = False,
+            fields: list[EmbedField] | tuple[EmbedField] = (),
+            *args,
+            **kwargs,
     ):
         self.user = user
         self.thumbnail = thumbnail
@@ -108,3 +130,9 @@ class Embed:
     def create_field(cls, name, value, inline=False):
         return EmbedField(name, value, inline)
 
+    def paginate(
+            self, fields: list[EmbedField] | tuple[EmbedField] = (), max_size: int = 6,
+            emb_style: str = "default"
+            ):
+        embeds = create_embeds_from_fields(self, fields, max_size, emb_style)
+        return embeds
