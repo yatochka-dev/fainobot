@@ -1,6 +1,6 @@
 {
-  "money": "Money",
-  "bank_balance": "Bank Balance",
-  "joined": "Joined the server",
-  "title": "${name}'s profile"
+  "money": "Гроші",
+  "bank_balance": "Банківський баланс",
+  "joined": "Приєднатися до сервера",
+  "title": "Профіль ${name}"
 }
