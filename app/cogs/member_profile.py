@@ -33,31 +33,34 @@ class MemberProfileCog(Cog, GuildService, MemberService):
             description="Member to get profile from",
         ),
     ):
+        _ = await self.bot.i10n.create_translation_state(payload=inter, group="profile")
+
         member = get_member_from_member_and_interaction(inter, member_)
-        guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
+        # guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
         member_db = inter.member_db
         # settings = GuildSettingsFromRaw(guild_db.settings)
 
         fields = [
             EmbedField(
-                name="Money",
+                name=_["money"],
                 value=f"{member_db.money} 💵",
                 inline=False,
             ),
             EmbedField(
-                name="Bank Balance",
+                name=_["bank_balance"],
                 value=f"{member_db.bank} 💵",
                 inline=False,
             ),
             EmbedField(
-                name="Joined",
+                name=_["joined"],
                 value=f"{disnake.utils.format_dt(member.joined_at, 'F')}",
                 inline=False,
             ),
         ]
 
         embed = Embed(
-            title=f"{member.display_name}'s Profile",
+            title=_["title"].apply(name=member.display_name),
+            # title=f"{member.display_name}'s Profile",
             fields=fields,
             user=member,
         ).as_color(member.color)
