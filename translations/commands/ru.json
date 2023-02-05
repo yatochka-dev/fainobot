@@ -17,5 +17,31 @@
     "errors": {
       "no_bot": "Вы не можете получить профиль бота"
     }
+  },
+  "transfer_cmd": {
+    "name": "transfer",
+    "description": "Transfer money to another member",
+    "options": {
+      "user": {
+        "name": "user",
+        "description": "The member to transfer money to"
+      },
+      "amount": {
+        "name": "amount",
+        "description": "The amount of money to transfer"
+      }
+    },
+    "strings": {
+      "current_balance": "Current balance",
+      "success_title": "Money transfer",
+      "success": "Successfully transferred ${amount} to ${mention}"
+    },
+    "errors": {
+      "title": "An error occurred while transferring money",
+      "no_bot": "You can't transfer money to a bot",
+      "no_self": "You can't transfer money to yourself",
+      "not_enough": "You do not have enough money to transfer, your balance is ${balance}, you are trying to transfer ${amount}.",
+      "greater_than_zero": "The amount of money to transfer must be greater than 0"
+    }
   }
 }
