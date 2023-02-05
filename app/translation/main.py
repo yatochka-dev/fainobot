@@ -2,9 +2,10 @@ import asyncio
 import typing
 
 import disnake
+from disnake import Localized
 
 from app.types import CacheNamespaces, CommandInteraction
-from .core import TranslationsManager, Command
+from .core import TranslationsManager, Command, CommandForInit, Opt
 
 if typing.TYPE_CHECKING:
     from app import Bot
@@ -26,10 +27,10 @@ TypesToGetGuildId = int | str | disnake.Guild | CommandInteraction
 
 class TranslationState:
     def __init__(
-            self,
-            language: str,
-            group: str,
-            client: "TranslationClient" = None,
+        self,
+        language: str,
+        group: str,
+        client: "TranslationClient" = None,
     ):
         self.language = language
         self.group = group
@@ -49,12 +50,12 @@ class TranslationClient:
     instance: "TranslationClient" = None
 
     def __init__(
-            self,
-            languages: list[str] = None,
-            dir_path: str = None,
-            default_lang: str = "en",
-            splitters=None,
-            bot: "Bot" = None,
+        self,
+        languages: list[str] = None,
+        dir_path: str = None,
+        default_lang: str = "en",
+        splitters=None,
+        bot: "Bot" = None,
     ):
         if splitters is None:
             splitters = [":"]
@@ -74,16 +75,16 @@ class TranslationClient:
         return f"<TranslationClient {self.default_lang=} {self.bot=}"
 
     def __getitem__(
-            self,
-            __key: str,
-            lang: str = None,
+        self,
+        __key: str,
+        lang: str = None,
     ):
         return self.get_translation(__key, lang)
 
     def get_translation(
-            self,
-            __key: str,
-            lang: str = None,
+        self,
+        __key: str,
+        lang: str = None,
     ):
         if not lang:
             lang = self.default_lang
@@ -93,10 +94,7 @@ class TranslationClient:
         return self.processed_data.get_language(lang).get_group(group).get_string(key)
 
     async def get_translation_async(
-            self,
-            __key: str,
-            lang: str = None,
-            payload: TypesToGetGuildId = None
+        self, __key: str, lang: str = None, payload: TypesToGetGuildId = None
     ):
         if payload:
             lang = await self.get_language_from_interaction(payload)
@@ -108,10 +106,7 @@ class TranslationClient:
         return self.processed_data.get_language(lang).get_group(group).get_string(key)
 
     async def create_translation_state(
-            self,
-            *,
-            lang: str = None, group: str = None,
-            payload: disnake.CommandInteraction = None
+        self, *, lang: str = None, group: str = None, payload: disnake.CommandInteraction = None
     ):
         if payload:
             lang = await self.get_language_from_interaction(payload)
@@ -126,18 +121,96 @@ class TranslationClient:
             client=self,
         )
 
-    async def get_command_translation(
-            self,
-            inter: disnake.CommandInteraction,
-            /
-    ) -> Command | None:
+    async def get_command_translation(self, inter: disnake.CommandInteraction, /) -> Command | None:
 
         lang = await self.get_language_from_interaction(inter)
-        dt = self.processed_data.get_language(lang).get_group("commands").get_command(
-            inter.application_command.name + "_cmd"
+        dt = (
+            self.processed_data.get_language(lang)
+            .get_group("commands")
+            .get_command(inter.application_command.name + "_cmd")
         )
 
         return dt
+
+    def get_command_init(self, cmd_name: str):
+
+        get_translations_for_cmd: dict[str, Command] = {
+            lang: self.processed_data.get_language(lang)
+            .get_group("commands")
+            .get_command(cmd_name + "_cmd")
+            for lang in self.languages
+        }
+
+        names = {lang: get_translations_for_cmd[lang].name for lang in self.languages}
+
+        descriptions = {lang: get_translations_for_cmd[lang].description for lang in self.languages}
+
+        options = {lang: get_translations_for_cmd[lang].options for lang in self.languages}
+
+        opts = {
+            f"{lang}_{opt}": {
+                "name": dt.name,
+                "description": dt.description,
+            }
+            for lang in self.languages
+            for opt, dt in options[lang].items()
+        }
+
+        opts = {
+            f"{nm.split('_')[1]}": {
+                "name": {lang.split("_")[0]: dt["name"] for lang, dt in opts.items()},
+                "description": {lang.split("_")[0]: dt["name"] for lang, dt in opts.items()},
+            }
+            for nm, dt in opts.items()
+        }
+
+        name = Localized(
+            string=names[self.default_lang],
+            data={
+                lang.replace("en", "en-US"): names[lang]
+                for lang in self.languages
+                if lang != self.default_lang
+            },
+        )
+
+        description = Localized(
+            string=descriptions[self.default_lang],
+            data={
+                lang.replace("en", "en-US"): descriptions[lang]
+                for lang in self.languages
+                if lang != self.default_lang
+            },
+        )
+
+        options = {
+            opt: Opt(
+                name=Localized(
+                    string=opts[opt]["name"][self.default_lang],
+                    data={
+                        lang.replace("en", "en-US"): opts[opt]["name"][lang]
+                        for lang in self.languages
+                        if lang != self.default_lang
+                    },
+                ),
+                description=Localized(
+                    string=opts[opt]["description"][self.default_lang],
+                    data={
+                        lang.replace("en", "en-US"): opts[opt]["description"][lang]
+                        for lang in self.languages
+                        if lang != self.default_lang
+                    },
+                ),
+            )
+            for opt, dt in opts.items()
+        }
+
+        return CommandForInit(
+            name=name,
+            description=description,
+            options=options,
+        )
+
+    # helpers
 
     async def get_language_from_interaction(self, payload: TypesToGetGuildId):
         snowflake = self._get_guild_snowflake(payload)
@@ -153,9 +226,7 @@ class TranslationClient:
 
         if not lang:
             if snowflake:
-                guild = await self.bot.prisma.guild.find_unique(
-                    where={"snowflake": snowflake}
-                )
+                guild = await self.bot.prisma.guild.find_unique(where={"snowflake": snowflake})
                 lang = guild.language
                 await self.bot.cache.set(
                     key=f"{snowflake}",

@@ -11,7 +11,7 @@ from app.types import CommandInteractionCommunity, CommandInteraction
 
 
 def get_member_from_member_and_interaction(
-    interaction: CommandInteraction, _member_: disnake.Member = None
+        interaction: CommandInteraction, _member_: disnake.Member = None
 ):
     if _member_ is None:
         return interaction.author
@@ -19,20 +19,24 @@ def get_member_from_member_and_interaction(
         return _member_
 
 
+client = TranslationClient.get_instance()
+profile_init = client.get_command_init("profile")
+
+
 class MemberProfileCog(Cog, GuildService, MemberService):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @slash_command(name="profile", description="Get a member's profile")
+    @slash_command(name=profile_init.name, description=profile_init.description)
     @db_required
     async def get_member_profile(
-        self,
-        inter: CommandInteractionCommunity,
-        member_: disnake.Member = Param(
-            None,
-            name="user",
-            description="Member to get profile from",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            member_: disnake.Member = Param(
+                None,
+                name=profile_init.options["user"].name,
+                description=profile_init.options["user"].description,
+            ),
     ):
         _ = await self.bot.i10n.get_command_translation(inter)
 
@@ -54,7 +58,8 @@ class MemberProfileCog(Cog, GuildService, MemberService):
             ),
             EmbedField(
                 name=_["joined"],
-                value=f"{disnake.utils.format_dt(member.joined_at, 'F')}",
+                value=f"{disnake.utils.format_dt(member.joined_at, 'F')} ("
+                      f"{disnake.utils.format_dt(member.joined_at, 'R')})",
                 inline=False,
             ),
         ]
@@ -69,12 +74,13 @@ class MemberProfileCog(Cog, GuildService, MemberService):
         await inter.send(embed=embed, components=[self.bot.get_cancel_button(inter.author)])
 
     @message_command(
-        name="profile",
+        name=profile_init.name,
+        description=profile_init.description,
     )
     async def get_member_profile_message(
-        self,
-        inter: CommandInteractionCommunity,
-        message: disnake.Message,
+            self,
+            inter: CommandInteractionCommunity,
+            message: disnake.Message,
     ):
         _ = await self.bot.i10n.get_command_translation(inter)
 

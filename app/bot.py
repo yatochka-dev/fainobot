@@ -114,7 +114,7 @@ class Bot(InteractionBot):
         self.i10n = TranslationClient(
             languages=["en", "ru", "uk"],
             dir_path=str(self.BASE_DIR / "translation"),
-            default_lang="uk",
+            default_lang="en",
             splitters=(
                 ":",
                 ".",

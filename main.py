@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import os
+import sys
 
-from disnake import CommandInter
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
@@ -43,6 +45,11 @@ async def load_cogs():
 
 @app.on_event("startup")
 async def startup():
+    import locale
+
+    if locale.getpreferredencoding().upper() != "UTF-8":
+        locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+
     bot.logger.debug("Loading environment variables")
     load_env()
     bot.logger.debug("Loaded environment variables")
@@ -65,8 +72,6 @@ async def startup():
         asyncio.create_task(bot.start(discord_token))
     else:
         bot.logger.critical("No Discord token found!")
-
-
 
 
 @app.on_event("shutdown")

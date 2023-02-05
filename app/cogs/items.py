@@ -27,9 +27,9 @@ class ItemsManagement(Cog, ItemService):
     )
     @db_required
     async def create_item_command(
-        self,
-        inter: CommandInteractionCommunity,
-        title: str,
+            self,
+            inter: CommandInteractionCommunity,
+            title: str,
     ):
         has, items_count = await self.has_max_items(inter.guild)
 
@@ -67,12 +67,12 @@ class ItemsManagement(Cog, ItemService):
     @item.sub_command(name="remove")
     @db_required
     async def delete_item_command(
-        self,
-        inter: CommandInteractionCommunity,
-        item: str = commands.Param(
-            name="item",
-            description="Item that will be deleted.",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            item: str = commands.Param(
+                name="item",
+                description="Item that will be deleted.",
+            ),
     ):
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
@@ -83,7 +83,7 @@ class ItemsManagement(Cog, ItemService):
             description=f"Are you sure you want to delete item `{item_db.title}`?\n "
                         f"Already bought items will be deleted as well.\n"
                         f"\nThis action "
-            f"cannot be undone.\n\n\nP.S. Item parameters are listed below.",
+                        f"cannot be undone.\n\n\nP.S. Item parameters are listed below.",
             user=inter.user,
         ).info
 
@@ -123,12 +123,12 @@ class ItemsManagement(Cog, ItemService):
     @item.sub_command(name="retrieve")
     @db_required
     async def retrieve_item_command(
-        self,
-        inter: CommandInteractionCommunity,
-        item: str = commands.Param(
-            name="item",
-            description="Item that will be retrieved.",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            item: str = commands.Param(
+                name="item",
+                description="Item that will be retrieved.",
+            ),
     ):
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
@@ -141,16 +141,16 @@ class ItemsManagement(Cog, ItemService):
     @item.sub_command(name="edit")
     @db_required
     async def edit_item_command(
-        self,
-        inter: CommandInteractionCommunity,
-        item: str = commands.Param(
-            name="item",
-            description="Item that will be edited.",
-        ),
-        edit_title: str = commands.Param(
-            name="edit_title",
-            description="New title of the item.",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            item: str = commands.Param(
+                name="item",
+                description="Item that will be edited.",
+            ),
+            edit_title: str = commands.Param(
+                name="edit_title",
+                description="New title of the item.",
+            ),
     ):
         await inter.send("Not implemented yet", ephemeral=True)
         # @todo: implement item edit command
@@ -170,10 +170,11 @@ class ItemsManagement(Cog, ItemService):
     @retrieve_item_command.autocomplete("item")
     @edit_item_command.autocomplete("item")
     async def item_delete_or_retrieve_or_edit_item_autocomplete(
-        self, inter: CommandInteraction, item: str
+            self, inter: CommandInteraction, item: str
     ):
 
-        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item, only_available=False)
+        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item,
+                                                              only_available=False)
 
         if not more_that_zero:
             return []

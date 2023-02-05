@@ -19,21 +19,21 @@ red_dash = Fore.LIGHTRED_EX + " - " + Style.RESET_ALL
 
 FORMAT = (
     Fore.GREEN
-    + "%(asctime)s "
+    + u"%(asctime)s "
     + Style.RESET_ALL
     + red_stick
-    + "{primary_color}\033[1m%(levelname)s\033[0m{spaces}"
+    + u"{primary_color}\033[1m%(levelname)s\033[0m{spaces}"
     + red_stick
     + Fore.CYAN
-    + "%(filename)s"
+    + u"%(filename)s"
     + red_column
     + Fore.CYAN
-    + "%(name)s"
+    + u"%(name)s"
     + red_column
     + Fore.CYAN
-    + "%(lineno)d"
+    + u"%(lineno)d"
     + red_dash
-    + "{secondary_color}%(message)s"
+    + u"{secondary_color}%(message)s"
     + Style.RESET_ALL
 )
 
@@ -54,11 +54,7 @@ def get_format_spaces(record: int):
 def get_format(record: int):
     spaces = " " * get_format_spaces(record)
     color = FORMATS[record]
-    return FORMAT.format(
-        spaces=Style.RESET_ALL + spaces,
-        primary_color=color,
-        secondary_color=color,
-    )
+    return u"{}".format(FORMAT.format(spaces=Style.RESET_ALL + spaces,primary_color=color,secondary_color=color,))
 
 
 class CustomFormatter(logging.Formatter):

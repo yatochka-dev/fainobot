@@ -275,4 +275,4 @@ class ItemService(AppService):
         # )
 
         # return item
-        raise NotImplementedError()
+        raise NotImplementedError("Not implemented yet")

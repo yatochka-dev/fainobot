@@ -1,8 +1,10 @@
+import dataclasses
 import json
 import os
 from string import Template
 from typing import NamedTuple
 
+from disnake import Localized
 from pydantic import BaseModel
 
 
@@ -64,6 +66,17 @@ class Command(BaseModel):
     def __repr__(self):
         return f"<Command name={self.name}>"
 
+@dataclasses.dataclass
+class Opt:
+    name: Localized
+    description: Localized
+
+@dataclasses.dataclass
+class CommandForInit:
+    name: Localized
+    description: Localized
+
+    options: dict[str, Opt]
 
 
 class TranslatedString:
