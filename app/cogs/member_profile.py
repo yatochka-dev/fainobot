@@ -34,9 +34,7 @@ class MemberProfileCog(Cog, GuildService, MemberService):
             description="Member to get profile from",
         ),
     ):
-        i10n = TranslationClient.get_instance()
-        self.bot.logger.debug(f"Translation client {i10n!r}")
-        _ = await self.bot.i10n.create_translation_state(payload=inter, group="profile")
+        _ = await self.bot.i10n.get_command_translation(inter)
 
         member = get_member_from_member_and_interaction(inter, member_)
         # guild_db = await self.get_guild(inter.guild_id, include={"settings": True})
@@ -78,16 +76,19 @@ class MemberProfileCog(Cog, GuildService, MemberService):
         inter: CommandInteractionCommunity,
         message: disnake.Message,
     ):
+        _ = await self.bot.i10n.get_command_translation(inter)
+
         if message.author.bot:
-            raise BotException(code=405, message="This command can't be used for bots")
+            raise BotException(code=405, message=_.get_error("no_bot"))
 
         await self.get_member_profile(inter, message.author)
 
     async def cog_slash_command_check(self, inter: CommandInteraction, *args, **kwargs) -> bool:
         member = inter.options.get("user", None) or inter.author
+        _ = await self.bot.i10n.get_command_translation(inter)
 
         if member.bot:
-            raise BotException(code=405, message=f"This command can't be used for bots")
+            raise BotException(code=405, message=_.get_error("no_bot"))
 
         return True
 

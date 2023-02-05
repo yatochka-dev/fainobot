@@ -58,6 +58,11 @@ class Admin(Cog):
     )
     async def guilds_list(self, inter: CommandInteraction):
         guilds = self.bot.guilds
+        # sort by member count
+        # self.bot.logger.debug(f"Sorting guilds by member count, {guilds}")
+        guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)
+
+        # self.bot.logger.debug(f"Sorted guilds by member count, {guilds}")
 
         fields = [
             Embed.create_field(

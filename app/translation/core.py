@@ -1,12 +1,70 @@
 import json
-import json
 import os
 from string import Template
 from typing import NamedTuple
 
+from pydantic import BaseModel
+
 
 # TranslationFile = NamedTuple('TranslationFile', "path, group, lang")
 # create as class
+
+class Option(BaseModel):
+    name: str
+    description: str
+
+
+class Command(BaseModel):
+    """
+     "profile_cmd": {
+    "name": "profile",
+    "description": "Get a member's profile",
+    "options": {
+      "user": {
+        "name": "user",
+        "description": "The member to get the profile of"
+      }
+    },
+    "strings": {
+      "money": "Money",
+      "bank_balance": "Bank Balance",
+      "joined": "Joined the server",
+      "title": "${name}'s profile"
+    },
+    "errors": {
+      "no_bot": "You can't get the profile of a bot"
+    }
+  },
+    """
+
+    name: str
+    description: str
+    options: dict[str, Option]
+    strings: dict[str, str]
+    errors: dict[str, str]
+
+    class Config:
+        allow_mutation = False
+
+    def get_option(self, name: str):
+        return self.options.get(name, f"[{name}]")
+
+    def get_string(self, name: str):
+        return TranslatedString(self.strings.get(name, f"[{name}]"))
+
+    def get_error(self, name: str):
+        return TranslatedString(self.errors.get(name, f"[{name}]"))
+
+    def __getitem__(self, item):
+        return self.get_string(item)
+
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return f"<Command name={self.name}>"
+
+
 
 class TranslatedString:
 
@@ -24,7 +82,7 @@ class TranslatedString:
 
 
 class TranslatedGroup:
-    def __init__(self, raw_group: dict[str, str], group_not_found: bool = False):
+    def __init__(self, raw_group: dict[str, str | dict], group_not_found: bool = False):
         self._raw_group = raw_group
         self.group_not_found = group_not_found
 
@@ -35,6 +93,22 @@ class TranslatedGroup:
         raw_string = self._raw_group.get(string, f"[{string}][error=string_not_found]")
 
         return TranslatedString(raw_string)
+
+    def get_command(self, command: str):
+        raw_command: dict = self._raw_group.get(command, None)
+
+        if not raw_command:
+            return Command(
+                name=command,
+                description=f"[{command}][error=command_not_found]",
+                options={},
+                strings={},
+                errors={},
+            )
+
+        return Command(
+            **raw_command
+        )
 
 
 class TranslatedLanguage:

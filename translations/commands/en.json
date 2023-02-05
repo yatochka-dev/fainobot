@@ -1,4 +1,23 @@
 {
+  "profile_cmd": {
+    "name": "profile",
+    "description": "Get a member's profile",
+    "options": {
+      "user": {
+        "name": "user",
+        "description": "The member to get the profile of"
+      }
+    },
+    "strings": {
+      "money": "Money",
+      "bank_balance": "Bank Balance",
+      "joined": "Joined the server",
+      "title": "${name}'s profile"
+    },
+    "errors": {
+      "no_bot": "You can't get the profile of a bot"
+    }
+  },
   "welcome": "Welcome to the world of the future",
   "technology": "Advancements in technology have changed the way we live.",
   "artificial_intelligence": "Artificial Intelligence is becoming increasingly prevalent in our daily lives.",

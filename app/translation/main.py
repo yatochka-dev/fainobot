@@ -4,7 +4,7 @@ import typing
 import disnake
 
 from app.types import CacheNamespaces, CommandInteraction
-from .core import TranslationsManager
+from .core import TranslationsManager, Command
 
 if typing.TYPE_CHECKING:
     from app import Bot
@@ -73,16 +73,12 @@ class TranslationClient:
     def __repr__(self):
         return f"<TranslationClient {self.default_lang=} {self.bot=}"
 
-    @staticmethod
-    def _get_guild_snowflake(value: TypesToGetGuildId) -> str:
-        if isinstance(value, int):
-            return str(value)
-        elif isinstance(value, str):
-            return value
-        elif isinstance(value, disnake.Guild):
-            return str(value.id)
-        elif isinstance(value, CommandInteraction):
-            return str(value.guild_id)
+    def __getitem__(
+            self,
+            __key: str,
+            lang: str = None,
+    ):
+        return self.get_translation(__key, lang)
 
     def get_translation(
             self,
@@ -130,12 +126,18 @@ class TranslationClient:
             client=self,
         )
 
-    def __getitem__(
+    async def get_command_translation(
             self,
-            __key: str,
-            lang: str = None,
-    ):
-        return self.get_translation(__key, lang)
+            inter: disnake.CommandInteraction,
+            /
+    ) -> Command | None:
+
+        lang = await self.get_language_from_interaction(inter)
+        dt = self.processed_data.get_language(lang).get_group("commands").get_command(
+            inter.application_command.name + "_cmd"
+        )
+
+        return dt
 
     async def get_language_from_interaction(self, payload: TypesToGetGuildId):
         snowflake = self._get_guild_snowflake(payload)
@@ -175,6 +177,17 @@ class TranslationClient:
     def set_instance(cls, instance):
         cls.instance = instance
         return cls.get_instance()
+
+    @staticmethod
+    def _get_guild_snowflake(value: TypesToGetGuildId) -> str:
+        if isinstance(value, int):
+            return str(value)
+        elif isinstance(value, str):
+            return value
+        elif isinstance(value, disnake.Guild):
+            return str(value.id)
+        elif isinstance(value, CommandInteraction):
+            return str(value.guild_id)
 
 
 async def main():
