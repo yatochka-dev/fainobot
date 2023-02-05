@@ -1,8 +1,8 @@
 {
   "sys_error": {
     "code": 500,
-    "title": "System error",
-    "message": "An error occurred while processing your request. Please try again later."
+    "title": "Системная ошибка",
+    "message": "Произошла ошибка при обработке вашего запроса. Пожалуйста, свяжитесь с нами или повторите попытку позже."
   },
   "system_error": "Системная ошибка",
   "system_error_desc": "Произошла ошибка при обработке вашего запроса. Пожалуйста, повторите попытку позже."
