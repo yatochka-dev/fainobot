@@ -19,29 +19,29 @@
     }
   },
   "transfer_cmd": {
-    "name": "transfer",
-    "description": "Transfer money to another member",
+    "name": "перевести",
+    "description": "Перевести деньги другому участнику",
     "options": {
       "user": {
-        "name": "user",
-        "description": "The member to transfer money to"
+        "name": "пользователь",
+        "description": "Участник для перевода денег"
       },
       "amount": {
-        "name": "amount",
-        "description": "The amount of money to transfer"
+        "name": "сумма",
+        "description": "Сумма денег для перевода"
       }
     },
     "strings": {
-      "current_balance": "Current balance",
-      "success_title": "Money transfer",
-      "success": "Successfully transferred ${amount} to ${mention}"
+      "current_balance": "Текущий баланс",
+      "success_title": "Перевод денег",
+      "success": "Успешно переведено ${amount} на счёт ${mention}"
     },
     "errors": {
-      "title": "An error occurred while transferring money",
-      "no_bot": "You can't transfer money to a bot",
-      "no_self": "You can't transfer money to yourself",
-      "not_enough": "You do not have enough money to transfer, your balance is ${balance}, you are trying to transfer ${amount}.",
-      "greater_than_zero": "The amount of money to transfer must be greater than 0"
+      "title": "Произошла ошибка при переводе денег",
+      "no_bot": "Вы не можете перевести деньги боту",
+      "no_self": "Вы не можете переводить деньги самому себе",
+      "not_enough": "У вас недостаточно средств для перевода, ваш баланс - ${balance}, Вы пытаетесь перевести ${amount}.",
+      "greater_than_zero": "Сумма перевода должна быть больше 0"
     }
   }
 }
