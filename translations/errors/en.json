@@ -1,4 +1,9 @@
 {
+  "sys_error": {
+    "code": 500,
+    "title": "System error",
+    "message": "An error occurred while processing your request. Please try again later."
+  },
   "system_error": "System error",
   "system_error_desc": "An error occurred while processing your request. Please try again later."
 }
