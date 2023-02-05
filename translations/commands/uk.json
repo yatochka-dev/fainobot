@@ -1,21 +1,21 @@
 {
   "profile_cmd": {
-    "name": "profile",
-    "description": "Get a member's profile",
+    "name": "профіль",
+    "description": "Отримати профіль користувача",
     "options": {
       "user": {
-        "name": "user",
-        "description": "The member to get the profile of"
+        "name": "користувач",
+        "description": "Учасник, щоб отримати профіль"
       }
     },
     "strings": {
-      "money": "Money",
-      "bank_balance": "Bank Balance",
-      "joined": "Joined the server",
-      "title": "${name}'s profile"
+      "money": "Гроші",
+      "bank_balance": "Банківський рахунок",
+      "joined": "Приєднався до сервера",
+      "title": "Профіль ${name}"
     },
     "errors": {
-      "no_bot": "You can't get the profile of a bot"
+      "no_bot": "Ви не можете отримати профіль бота"
     }
   },
   "welcome": "Ласкаво просимо до світу майбутнього",
