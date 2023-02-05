@@ -159,7 +159,7 @@ class TranslationClient:
         opts = {
             f"{nm.split('_')[1]}": {
                 "name": {lang.split("_")[0]: dt["name"] for lang, dt in opts.items()},
-                "description": {lang.split("_")[0]: dt["name"] for lang, dt in opts.items()},
+                "description": {lang.split("_")[0]: dt["description"] for lang, dt in opts.items()},
             }
             for nm, dt in opts.items()
         }
