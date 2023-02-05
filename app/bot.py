@@ -121,6 +121,7 @@ class Bot(InteractionBot):
             ),
             bot=self,
         )
+        self.i10n.set_instance(self.i10n)
         self.prisma: Prisma = prisma
         self.disnake_logger = disnake_logger
 

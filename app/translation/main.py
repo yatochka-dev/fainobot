@@ -46,10 +46,12 @@ class TranslationState:
 
 
 class TranslationClient:
+    instance: "TranslationClient" = None
+
     def __init__(
             self,
-            languages: list[str],
-            dir_path: str,
+            languages: list[str] = None,
+            dir_path: str = None,
             default_lang: str = "en",
             splitters=None,
             bot: "Bot" = None,
@@ -67,6 +69,9 @@ class TranslationClient:
             dir_path="P:\PyCharm\Projects\\fainobot\\translations",
         )
         self.processed_data = self.manager.process_translations()
+
+    def __repr__(self):
+        return f"<TranslationClient {self.default_lang=} {self.bot=}"
 
     @staticmethod
     def _get_guild_snowflake(value: TypesToGetGuildId) -> str:
@@ -161,6 +166,15 @@ class TranslationClient:
                 lang = self.default_lang
 
         return lang
+
+    @classmethod
+    def get_instance(cls):
+        return cls.instance
+
+    @classmethod
+    def set_instance(cls, instance):
+        cls.instance = instance
+        return cls.get_instance()
 
 
 async def main():

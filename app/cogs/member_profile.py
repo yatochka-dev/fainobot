@@ -6,6 +6,7 @@ from app.decorators import db_required
 from app.exceptions import BotException
 from app.services.GuildService import GuildService
 from app.services.MemberService import MemberService
+from app.translation.main import TranslationClient
 from app.types import CommandInteractionCommunity, CommandInteraction
 
 
@@ -33,6 +34,8 @@ class MemberProfileCog(Cog, GuildService, MemberService):
             description="Member to get profile from",
         ),
     ):
+        i10n = TranslationClient.get_instance()
+        self.bot.logger.debug(f"Translation client {i10n!r}")
         _ = await self.bot.i10n.create_translation_state(payload=inter, group="profile")
 
         member = get_member_from_member_and_interaction(inter, member_)
