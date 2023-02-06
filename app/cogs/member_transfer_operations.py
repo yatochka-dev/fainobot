@@ -15,10 +15,7 @@ from app.types import CommandInteractionCommunity
 
 client = TranslationClient.get_instance()
 transfer_init = client.get_command_init("transfer")
-print(transfer_init.options.get("user").name.localizations.data)
-print(transfer_init.options.get("amount").name.localizations.data)
-print(transfer_init.options.get("user").description.localizations.data)
-print(transfer_init.options.get("amount").description.localizations.data)
+
 
 class MemberTransferOperationsCog(Cog, GuildService, MemberService):
     def __init__(self, bot: Bot):

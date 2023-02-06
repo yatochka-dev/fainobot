@@ -127,7 +127,7 @@ class TranslationClient:
         dt = (
             self.processed_data.get_language(lang)
             .get_group("commands")
-            .get_command(inter.application_command.name + "_cmd")
+            .get_command(inter.application_command.qualified_name.replace(" ", "_") + "_cmd")
         )
 
         return dt

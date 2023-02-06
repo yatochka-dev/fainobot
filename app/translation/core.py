@@ -40,10 +40,10 @@ class Command(BaseModel):
     """
 
     name: str
-    description: str
-    options: dict[str, Option]
-    strings: dict[str, str]
-    errors: dict[str, str]
+    description: str = ""
+    options: dict[str, Option] = {}
+    strings: dict[str, str] = {}
+    errors: dict[str, str] = {}
 
     class Config:
         allow_mutation = False
