@@ -45,62 +45,62 @@
     }
   },
   "shop_cmd": {
-    "name": "shop"
+    "name": "магазин"
   },
   "shop_list_cmd": {
-    "name": "list",
-    "description": "List all items in the shop",
+    "name": "список",
+    "description": "Список всех товаров в магазине",
     "strings": {
-      "title": "Shop",
-      "description": "Here are all the items you can buy"
+      "title": "Магазин",
+      "description": "Вот все вещи, которые вы можете купить"
     },
     "errors": {
-      "title": "An error occurred while listing the shop",
-      "no_items": "There are no items in the shop"
+      "title": "Произошла ошибка при отображении магазина",
+      "no_items": "В магазине нет товаров"
     }
   },
   "shop_buy_cmd": {
-    "name": "buy",
-    "description": "Buy an item from the shop",
+    "name": "купить",
+    "description": "Купить предмет в магазине",
     "options": {
       "item": {
-        "name": "item",
-        "description": "The item to buy"
+        "name": "элемент",
+        "description": "Товар для покупки"
       }
     },
     "string": {
-      "success_title": "Item bought",
-      "success": "You bought `#${index}` ${title} \n use `/inventory` to see your items"
+      "success_title": "Предмет куплен",
+      "success": "Вы купили `#${index}` ${title} \n используйте `/inventory`, чтобы увидеть ваши предметы"
     },
     "errors": {
-      "title": "An error occurred while buying an item",
-      "no_item": "Item ${item} not found",
-      "not_enough": "You do not have enough money to buy this item, your balance is ${balance}, the item costs ${cost}.",
-      "out_of_stock": "This item is out of stock",
-      "not_available": "This item is not available",
-      "not_buy_able": "This item can't be bought",
-      "went_wrong": "Something went wrong while buying this item, please try again later"
+      "title": "Произошла ошибка при покупке товара",
+      "no_item": "Элемент ${item} не найден",
+      "not_enough": "У вас недостаточно денег для покупки этого предмета. Ваш баланс - ${balance}, предмет стоит ${cost}.",
+      "out_of_stock": "Этот товар закончился в наличии",
+      "not_available": "Этот элемент недоступен",
+      "not_buy_able": "Этот предмет нельзя купить",
+      "went_wrong": "Что-то пошло не так при покупке этого элемента, пожалуйста, повторите попытку позже"
     }
   },
   "shop_view_cmd": {
-    "name": "view",
-    "description": "View an item from the shop",
+    "name": "просмотр",
+    "description": "Просмотр товара из магазина",
     "options": {
       "item": {
-        "name": "item",
-        "description": "The item to view"
+        "name": "элемент",
+        "description": "Элемент для просмотра"
       }
     },
     "strings": {
-      "title": "Item",
+      "title": "Пункт 1",
       "description": "`#${index}` - ${title}",
-      "cost": "Cost",
-      "stock": "Stock",
-      "available": "Available"
+      "cost": "Затраты",
+      "stock": "Склад",
+      "available": "Доступно"
     },
     "errors": {
-      "title": "An error occurred while viewing an item",
-      "no_item": "Item ${item} not found"
+      "title": "Произошла ошибка при просмотре элемента",
+      "no_item": "Элемент ${item} не найден"
     }
   }
 }
