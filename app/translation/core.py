@@ -60,11 +60,7 @@ class Command(BaseModel):
     def __getitem__(self, item):
         return self.get_string(item)
 
-    def __str__(self):
-        return self.name
 
-    def __repr__(self):
-        return f"<Command name={self.name}>"
 
 @dataclasses.dataclass
 class Opt:

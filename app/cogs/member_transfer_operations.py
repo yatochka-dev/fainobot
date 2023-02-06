@@ -9,22 +9,33 @@ from app.exceptions import BotException
 from app.services.CommunityService import CommunityService
 from app.services.GuildService import GuildService
 from app.services.MemberService import MemberService
+from app.translation.main import TranslationClient
 from app.types import CommandInteractionCommunity
 
+
+client = TranslationClient.get_instance()
+transfer_init = client.get_command_init("transfer")
+print(transfer_init.options.get("user").name.localizations.data)
+print(transfer_init.options.get("amount").name.localizations.data)
+print(transfer_init.options.get("user").description.localizations.data)
+print(transfer_init.options.get("amount").description.localizations.data)
 
 class MemberTransferOperationsCog(Cog, GuildService, MemberService):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @slash_command(name="transfer", description="Transfer money to another member")
+    @slash_command(name=transfer_init.name, description=transfer_init.description)
     @db_required
     async def transfer_money(
             self,
             inter: CommandInteractionCommunity,
-            member: disnake.Member,
+            member: disnake.Member = Param(
+                name=transfer_init.options["user"].name,
+                description=transfer_init.options["user"].description,
+            ),
             amount: int = Param(
-                name="amount",
-                description="Amount of money to transfer",
+                name=transfer_init.options["amount"].name,
+                description=transfer_init.options["amount"].description,
                 ge=Settings.PRICE_NUMBER.min,
                 le=Settings.PRICE_NUMBER.max,
             ),

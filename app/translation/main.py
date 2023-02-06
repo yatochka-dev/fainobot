@@ -27,10 +27,10 @@ TypesToGetGuildId = int | str | disnake.Guild | CommandInteraction
 
 class TranslationState:
     def __init__(
-        self,
-        language: str,
-        group: str,
-        client: "TranslationClient" = None,
+            self,
+            language: str,
+            group: str,
+            client: "TranslationClient" = None,
     ):
         self.language = language
         self.group = group
@@ -50,12 +50,12 @@ class TranslationClient:
     instance: "TranslationClient" = None
 
     def __init__(
-        self,
-        languages: list[str] = None,
-        dir_path: str = None,
-        default_lang: str = "en",
-        splitters=None,
-        bot: "Bot" = None,
+            self,
+            languages: list[str] = None,
+            dir_path: str = None,
+            default_lang: str = "en",
+            splitters=None,
+            bot: "Bot" = None,
     ):
         if splitters is None:
             splitters = [":"]
@@ -75,16 +75,16 @@ class TranslationClient:
         return f"<TranslationClient {self.default_lang=} {self.bot=}"
 
     def __getitem__(
-        self,
-        __key: str,
-        lang: str = None,
+            self,
+            __key: str,
+            lang: str = None,
     ):
         return self.get_translation(__key, lang)
 
     def get_translation(
-        self,
-        __key: str,
-        lang: str = None,
+            self,
+            __key: str,
+            lang: str = None,
     ):
         if not lang:
             lang = self.default_lang
@@ -94,7 +94,7 @@ class TranslationClient:
         return self.processed_data.get_language(lang).get_group(group).get_string(key)
 
     async def get_translation_async(
-        self, __key: str, lang: str = None, payload: TypesToGetGuildId = None
+            self, __key: str, lang: str = None, payload: TypesToGetGuildId = None
     ):
         if payload:
             lang = await self.get_language_from_interaction(payload)
@@ -106,7 +106,7 @@ class TranslationClient:
         return self.processed_data.get_language(lang).get_group(group).get_string(key)
 
     async def create_translation_state(
-        self, *, lang: str = None, group: str = None, payload: disnake.CommandInteraction = None
+            self, *, lang: str = None, group: str = None, payload: disnake.CommandInteraction = None
     ):
         if payload:
             lang = await self.get_language_from_interaction(payload)
@@ -147,22 +147,17 @@ class TranslationClient:
 
         options = {lang: get_translations_for_cmd[lang].options for lang in self.languages}
 
-        opts = {
-            f"{lang}_{opt}": {
-                "name": dt.name,
-                "description": dt.description,
-            }
-            for lang in self.languages
-            for opt, dt in options[lang].items()
-        }
+        opts_result = {}
+        for lang in self.languages:
 
-        opts = {
-            f"{nm.split('_')[1]}": {
-                "name": {lang.split("_")[0]: dt["name"] for lang, dt in opts.items()},
-                "description": {lang.split("_")[0]: dt["description"] for lang, dt in opts.items()},
-            }
-            for nm, dt in opts.items()
-        }
+            for opt in options[lang]:
+                opts_result.setdefault(opt, {})
+
+                option_n = opts_result[opt].setdefault("name", {})
+                option_d = opts_result[opt].setdefault("description", {})
+
+                option_n.setdefault(lang, options[lang][opt].name)
+                option_d.setdefault(lang, options[lang][opt].description)
 
         name = Localized(
             string=names[self.default_lang],
@@ -185,23 +180,23 @@ class TranslationClient:
         options = {
             opt: Opt(
                 name=Localized(
-                    string=opts[opt]["name"][self.default_lang],
+                    string=opts_result[opt]["name"][self.default_lang],
                     data={
-                        lang.replace("en", "en-US"): opts[opt]["name"][lang]
+                        lang.replace("en", "en-US"): opts_result[opt]["name"][lang]
                         for lang in self.languages
                         if lang != self.default_lang
                     },
                 ),
                 description=Localized(
-                    string=opts[opt]["description"][self.default_lang],
+                    string=opts_result[opt]["description"][self.default_lang],
                     data={
-                        lang.replace("en", "en-US"): opts[opt]["description"][lang]
+                        lang.replace("en", "en-US"): opts_result[opt]["description"][lang]
                         for lang in self.languages
                         if lang != self.default_lang
                     },
                 ),
             )
-            for opt, dt in opts.items()
+            for opt, dt in opts_result.items()
         }
 
         return CommandForInit(
