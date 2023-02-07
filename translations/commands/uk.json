@@ -68,9 +68,9 @@
         "description": "Товар для покупки"
       }
     },
-    "string": {
-      "success_title": "Куплено",
-      "success": "Ви придбали `#${index}` ${title} використовуйте `/inventory`, щоб переглянути свої предмети"
+    "strings": {
+      "success_title": "Item bought",
+      "success": "You bought `#${index}` ${title} \n use `/inventory` to see your items"
     },
     "errors": {
       "title": "Помилка при покупці товару",
