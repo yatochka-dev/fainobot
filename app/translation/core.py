@@ -1,6 +1,7 @@
 import dataclasses
 import json
 import os
+from pathlib import Path
 from string import Template
 from typing import NamedTuple
 
@@ -165,7 +166,7 @@ class TranslationsManager:
 
     """
 
-    def __init__(self, languages: list[str], dir_path: str):
+    def __init__(self, languages: list[str], dir_path: str | Path):
         self.languages = languages
         self.dir_path = dir_path
 
@@ -176,7 +177,7 @@ class TranslationsManager:
 
         translation_files_paths = [
             TranslationFile(
-                path=os.path.join(self.dir_path, group, f"{lang}.json"), group=group, lang=lang
+                path=os.path.join(str(self.dir_path), group, f"{lang}.json"), group=group, lang=lang
             )
             for group in groups
             for lang in self.languages

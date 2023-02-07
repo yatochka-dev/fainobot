@@ -113,7 +113,7 @@ class Bot(InteractionBot):
         self.logger = logger
         self.i10n = TranslationClient(
             languages=["en", "ru", "uk"],
-            dir_path=str(self.BASE_DIR / "translation"),
+            dir_path=self.BASE_DIR / "translations",
             default_lang="en",
             splitters=(
                 ":",

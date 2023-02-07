@@ -1,5 +1,6 @@
 import asyncio
 import typing
+from pathlib import Path
 
 import disnake
 from disnake import Localized
@@ -52,7 +53,7 @@ class TranslationClient:
     def __init__(
             self,
             languages: list[str] = None,
-            dir_path: str = None,
+            dir_path: str | Path = None,
             default_lang: str = "en",
             splitters=None,
             bot: "Bot" = None,
@@ -67,7 +68,7 @@ class TranslationClient:
 
         self.manager = TranslationsManager(
             languages=["en", "ru", "uk"],
-            dir_path="P:\PyCharm\Projects\\fainobot\\translations",
+            dir_path=self.dir_path
         )
         self.processed_data = self.manager.process_translations()
 
