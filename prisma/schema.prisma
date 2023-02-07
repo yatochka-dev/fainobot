@@ -23,7 +23,7 @@ model Guild {
     settings GuildSettings?
 
     // indexes
-    items_index Int @default(1)
+    items_index Int @default(1 )
 }
 
 
@@ -142,8 +142,6 @@ model Item {
     // can be bought only until 
     availableUntil DateTime?
 
-    inventoryItems InventoryItem[]
-
     index Int @default(1) 
 
     @@unique([guildId, title])
@@ -154,8 +152,11 @@ model Item {
 model InventoryItem {
     id Int @id @default(autoincrement())
 
-    original Item @relation(fields: [originalId], references: [id])
-    originalId Int
+    title String @db.VarChar(200)
+
+    replyMessage String? @db.Text
+
+
 
     owner Member @relation(fields: [ownerId], references: [id])
     ownerId Int 
