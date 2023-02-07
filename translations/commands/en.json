@@ -68,7 +68,7 @@
         "description": "The item to buy"
       }
     },
-    "string": {
+    "strings": {
       "success_title": "Item bought",
       "success": "You bought `#${index}` ${title} \n use `/inventory` to see your items"
     },
