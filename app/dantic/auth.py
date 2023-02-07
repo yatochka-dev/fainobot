@@ -16,6 +16,7 @@ class Account(BaseModel):
     id_token: str = None
     session_state: str = None
 
+
 class DiscordUser(BaseModel):
     id: str
     username: str
@@ -33,6 +34,7 @@ class DiscordUser(BaseModel):
     premium_type: int = None
     email: str = None
     verified: bool
+
 
 class SessionUser(BaseModel):
     id: str
@@ -79,6 +81,7 @@ class DiscordOutsideGuild(BaseModel):
 class DiscordGuildsListForDashboard(AuthModel):
     guilds: list[DiscordGuild]
 
+
 class Emoji(BaseModel):
     id: int | None
     name: str | None
@@ -92,6 +95,7 @@ class Emoji(BaseModel):
             animated=data.animated,
         )
 
+
 class GuildDantic(BaseModel):
     id: int
     name: str
@@ -104,7 +108,6 @@ class GuildDantic(BaseModel):
 
     @classmethod
     def from_snake(cls, data: disnake.Guild, /):
-
         ret = cls(
             id=data.id,
             name=data.name,
@@ -117,6 +120,10 @@ class GuildDantic(BaseModel):
         )
         return ret
 
+
 class DashboardGuildPayload(AuthModel):
     guild_id: str
 
+
+class BasePayloadWithGuildIdAndAuth(AuthModel):
+    guild_id: str

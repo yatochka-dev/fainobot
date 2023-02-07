@@ -23,7 +23,7 @@ model Guild {
     settings GuildSettings?
 
     // indexes
-    items_index Int @default(1)
+    items_index Int @default(1 )
 }
 
 
@@ -114,6 +114,13 @@ model Role {
     collectType CollectType @default(noCollect)
     collectFixedAmount Int @default(10)
     collectPercentageAmount Int @default(10)
+
+    itemsRequired Item[] @relation("ItemRolesRequired")
+    itemsToAdd Item[] @relation("ItemRolesToAdd")
+    itemsToRemove Item[] @relation("ItemRolesToRemove")
+
+    inventoryItemsToAdd InventoryItem[] @relation("InventoryItemRolesToAdd")
+    inventoryItemsToRemove InventoryItem[] @relation("InventoryItemRolesToRemove")
 }
 
 
@@ -142,9 +149,11 @@ model Item {
     // can be bought only until 
     availableUntil DateTime?
 
-    inventoryItems InventoryItem[]
-
     index Int @default(1) 
+
+    rolesRequired Role[] @relation("ItemRolesRequired")
+    rolesToAdd Role[] @relation("ItemRolesToAdd")
+    rolesToRemove Role[] @relation("ItemRolesToRemove")
 
     @@unique([guildId, title])
 }
@@ -154,8 +163,12 @@ model Item {
 model InventoryItem {
     id Int @id @default(autoincrement())
 
-    original Item @relation(fields: [originalId], references: [id])
-    originalId Int
+    title String @db.VarChar(200)
+    description String?
+
+    replyMessage String? @db.Text
+    rolesToAdd Role[] @relation("InventoryItemRolesToAdd")
+    rolesToRemove Role[] @relation("InventoryItemRolesToRemove")
 
     owner Member @relation(fields: [ownerId], references: [id])
     ownerId Int 

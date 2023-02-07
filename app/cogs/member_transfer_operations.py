@@ -9,22 +9,30 @@ from app.exceptions import BotException
 from app.services.CommunityService import CommunityService
 from app.services.GuildService import GuildService
 from app.services.MemberService import MemberService
+from app.translation.main import TranslationClient
 from app.types import CommandInteractionCommunity
+
+
+client = TranslationClient.get_instance()
+transfer_init = client.get_command_init("transfer")
 
 
 class MemberTransferOperationsCog(Cog, GuildService, MemberService):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @slash_command(name="transfer", description="Transfer money to another member")
+    @slash_command(name=transfer_init.name, description=transfer_init.description)
     @db_required
     async def transfer_money(
             self,
             inter: CommandInteractionCommunity,
-            member: disnake.Member,
+            member: disnake.Member = Param(
+                name=transfer_init.options["user"].name,
+                description=transfer_init.options["user"].description,
+            ),
             amount: int = Param(
-                name="amount",
-                description="Amount of money to transfer",
+                name=transfer_init.options["amount"].name,
+                description=transfer_init.options["amount"].description,
                 ge=Settings.PRICE_NUMBER.min,
                 le=Settings.PRICE_NUMBER.max,
             ),
@@ -32,6 +40,8 @@ class MemberTransferOperationsCog(Cog, GuildService, MemberService):
         """
         Transfer money to another member
         """
+
+        _ = await self.bot.i10n.get_command_translation(inter)
 
         community_service = CommunityService.set_bot(self.bot)
 
@@ -48,20 +58,28 @@ class MemberTransferOperationsCog(Cog, GuildService, MemberService):
         except ValueError as e:
             raise BotException(
                 500,
-                f"You do not have enough money to transfer, your balance is {inter.member_db.money}, you are trying to transfer {amount}.",
-                "An error occurred while transferring money",
+                #f"You do not have enough money to transfer, your balance is {inter.member_db.money}, you are trying to transfer {amount}.",
+                _.get_error("not_enough").apply(
+                    balance=inter.member_db.money,
+                    amount=amount,
+                ),
+                _.get_error("title"),
             )
 
         fields = [
             EmbedField(
-                name="Current balance",
+                name=_["current_balance"],
                 value=f"{inter.author.mention} ({from_member_db.money})",
             ),
         ]
 
         embed = Embed(
-            title="Money transfer",
-            description=f"Successfully transferred {amount} 💵 to {member.mention}",
+            title=_["success_title"],
+            # f"Successfully transferred {amount} 💵 to {member.mention}"
+            description=_["success"].apply(
+                amount=amount,
+                mention=member.mention,
+            ),
             fields=fields,
             user=inter.author,
         ).success
@@ -72,14 +90,16 @@ class MemberTransferOperationsCog(Cog, GuildService, MemberService):
         amount = inter.options.get("amount", 0)
         member = inter.options.get("member", None)
 
+        _ = await self.bot.i10n.get_command_translation(inter)
+
         if member.bot:
-            raise BotException(400, "You cannot transfer money to a bot", "Bot detected")
+            raise BotException(400, _.get_error('no_bot'), _.get_error("title"))
 
         if member == inter.author:
-            raise BotException(400, "You cannot transfer money to yourself", "Self transfer")
+            raise BotException(400, _.get_error("no_self"), _.get_error("title"))
 
         if amount <= 0:
-            raise BotException(400, "Amount must be greater than 0", "Invalid amount")
+            raise BotException(400, _.get_error("greater_than_zero"), _.get_error("title"))
 
         return True
 

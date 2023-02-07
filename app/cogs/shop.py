@@ -1,13 +1,22 @@
 from disnake.ext import commands
 from disnake.ext.commands import Cog, slash_command
+from prisma import models
 
 from app import Bot, Embed
 from app.decorators import db_required
 from app.exceptions import BotException
 from app.services.ItemService import ItemService
 from app.services.MemberService import MemberService
+from app.translation.main import TranslationClient
 from app.types import CommandInteraction, CommandInteractionCommunity
 from app.views import PaginationView
+
+client = TranslationClient.get_instance()
+
+shop_init = client.get_command_init("shop")
+list_init = client.get_command_init("shop_list")
+buy_init = client.get_command_init("shop_buy")
+view_init = client.get_command_init("shop_view")
 
 
 class Shop(Cog, ItemService, MemberService):
@@ -15,23 +24,21 @@ class Shop(Cog, ItemService, MemberService):
         self.bot = bot
 
     @slash_command(
-        name="shop",
+        name=shop_init.name,
     )
     async def shop_main(self, inter: CommandInteraction):
-        # await self.shop(
-        #     inter=inter
-        # )
         pass
 
     @shop_main.sub_command(
-        name="list",
-        description="List all items in the shop"
+        name=list_init.name,
+        description=list_init.description
     )
     async def shop(
             self,
             inter: CommandInteraction,
-
     ):
+        _ = await self.bot.i10n.get_command_translation(inter)
+
         items = await self.get_items(
             inter.guild
         )
@@ -40,21 +47,21 @@ class Shop(Cog, ItemService, MemberService):
 
             raise BotException(
                 code=404,
-                message="This guild has no items",
-                title="No items found"
+                message=_.get_error("no_items"),
+                title=_.get_error("title")
             )
 
         fields = [
             Embed.create_field(
-                name=f"`#{item.index}`",
-                value=f"{item.title[:100]}"
+                name=f"{item.price} - {item.title}"[:256],
+                value=f"{item.description or '#'}"[:1024],
             )
             for item in items
         ]
 
         embed = Embed(
-            title="Shop",
-            description="Here are all the items you can buy",
+            title=_["title"],
+            description=_["description"],
             user=inter.user,
         )
 
@@ -76,24 +83,31 @@ class Shop(Cog, ItemService, MemberService):
         )
 
     @shop_main.sub_command(
-        name="buy",
-        description="Buy an item from the shop"
+        name=buy_init.name,
+        description=buy_init.description
     )
     @db_required
     async def shop_buy(
             self,
             inter: CommandInteractionCommunity,
             item: str = commands.Param(
-                name="item",
-                description="Item that you want to buy",
+                name=buy_init.options["item"].name,
+                description=buy_init.options["item"].description
             ),
     ):
+
+        _ = await self.bot.i10n.get_command_translation(inter)
+        await inter.channel.send(
+            f"Translation {_!r}"
+        )
+
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, f"Item `{item}` not found", title="Not found item")
+            raise BotException(500, _.get_error('no_item').apply(item=item),
+                               title=_.get_error("title"))
 
         try:
-            bought_item = await self.member_buy_item(
+            bought_item: models.InventoryItem | None = await self.member_buy_item(
                 member=inter.author,
                 item=item_db,
             )
@@ -101,48 +115,54 @@ class Shop(Cog, ItemService, MemberService):
 
             err = str(e)
             if err == "not_enough_money":
-                raise BotException(500, "You don't have enough money", title="Not enough money")
+                raise BotException(500, _["not_enough"], title=_.get_error("title"))
 
             elif err == "out_of_stock":
-                raise BotException(500, "This item is out of stock", title="Out of stock")
+                raise BotException(500, _["out_of_stock"], title=_.get_error("title"))
 
             elif err == "not_available":
-                raise BotException(500, "This item is not available", title="Not available")
+                raise BotException(500, _["not_available"], title=_.get_error("title"))
             else:
-                raise BotException(500, str(e), title="This item can't be bought")
+                raise BotException(500, str(e), title=_.get_error("title"))
 
         if bought_item is None:
-            raise BotException(500, "Something went wrong", title="Error")
+            raise BotException(500, _["went_wrong"], title=_.get_error("title"))
 
         await inter.send(
             embed=Embed(
-                title="Item bought",
-                description=f"You bought `#{bought_item.original.index}` "
-                            f"{bought_item.original.title}" + "\n" + f"Use `/inventory` to see "
-                                                                     f"your items",
+                title=_["success_title"],
+                description=_["success"].apply(
+                    index=item_db.index,
+                    title=item_db.title,
+                ),
                 user=inter.author,
             ).success,
         )
 
     @shop_main.sub_command(
-        name="view",
-        description="View an item from the shop"
+        name=view_init.name,
+        description=view_init.description
     )
     async def shop_view(
             self,
             inter: CommandInteraction,
             item: str = commands.Param(
-                name="item",
-                description="Item that you want to view",
+                name=view_init.options["item"].name,
+                description=view_init.options["item"].description,
             ),
     ):
+        _ = await self.bot.i10n.get_command_translation(inter)
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, f"Item `{item}` not found", title="Not found item")
+            raise BotException(500, _.get_error('no_item').apply(item=item),
+                               title=_.get_error("title"))
 
         await inter.send(
-            embed=(await self.item_to_embed(item_db, inter.author, title="Item",
-                                            desc=f"#{item_db.index} - {item_db.title}")).default,
+            embed=(await self.item_to_embed(item_db, inter.author, title=_['title'],
+                                            desc=_["description"].apply(
+                                                index=item_db.index,
+                                                title=item_db.title,
+                                            ))).default,
         )
 
     @shop_buy.autocomplete("item")
@@ -179,10 +199,10 @@ class Shop(Cog, ItemService, MemberService):
 
         fields = [
             Embed.create_field(
-                name=f"`#{item.original.index}` - {item.original.title}"[:100],
-                value=f"{item.original.description or '#'}"[:200]
+                name=f"{index} - {item.title}",
+                value=f"{item.description or '#'}"
             )
-            for item in items
+            for index, item in enumerate(items, start=1)
         ]
 
         embed = Embed(
@@ -213,26 +233,50 @@ class Shop(Cog, ItemService, MemberService):
     )
     @db_required
     async def use(
-        self,
-        inter: CommandInteractionCommunity,
-        item: str = commands.Param(
-            name="item",
-            description="Item that you want to use, from "
-                        "your inventory",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            item: str = commands.Param(
+                name="item",
+                description="Item that you want to use, from "
+                            "your inventory",
+            ),
     ):
-        pass
+        _ = await self.bot.i10n.get_command_translation(inter)
+
+        item_db = await self.get_item_from_use_autocomplete(member=inter.user, title=item)
+
+        if item_db is None:
+            raise BotException(500, "No item found", "Error")
+
+        reply_msg = await self.use_item(item_db)
+
+        if reply_msg is None:
+            embed = Embed(
+                title="You used the item",
+                description=f"You used the item `{item_db.title}`",
+                user=inter.user,
+            ).success
+
+        else:
+            embed = None
+
+        await inter.send(
+            content=reply_msg,
+            embed=embed,
+        )
+
 
     @use.autocomplete("item")
     async def use_autocomplete(
             self, inter: CommandInteraction, item: str
     ):
-        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item)
+        items, more_that_zero = await self.get_items_for_use_autocomplete(title=item,
+                                                                          member=inter.user)
 
         if not more_that_zero:
             return []
 
-        titles = [f"#{i.index} - {i.title}"[:100] or "#Not found item" for i in items]
+        titles = [f"{i.title}"[:100] or "#Not found item" for i in items]
 
         return titles
 

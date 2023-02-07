@@ -58,6 +58,11 @@ class Admin(Cog):
     )
     async def guilds_list(self, inter: CommandInteraction):
         guilds = self.bot.guilds
+        # sort by member count
+        # self.bot.logger.debug(f"Sorting guilds by member count, {guilds}")
+        guilds = sorted(guilds, key=lambda g: g.member_count, reverse=True)
+
+        # self.bot.logger.debug(f"Sorted guilds by member count, {guilds}")
 
         fields = [
             Embed.create_field(
@@ -124,6 +129,19 @@ class Admin(Cog):
         await inter.send(f"Added {amount} to {user!r} ({data.money})")
 
 
+class Test(Cog):
+    def __init__(self, bot: Bot):
+        self.bot = bot
+
+    # @slash_command(
+    #     guild_ids=Settings.TESTING_GUILDS,
+    #     name="test",
+    # )
+    # async def test(self, inter: CommandInteraction):
+    #     _ = await self.bot.i10n.create_translation_state(group="commands", payload=inter)
+    #
+    #     await inter.send(_["welcome"] + " " + _.language)
 
 def setup(bot: Bot):
     bot.add_cog(Admin(bot))
+    bot.add_cog(Test(bot))

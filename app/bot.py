@@ -11,7 +11,9 @@ from disnake.ext.commands import InteractionBot
 from prisma import Prisma
 from pydantic import BaseSettings
 
+from .translation.main import TranslationClient
 from .db import prisma
+
 # from .exceptions import BotException
 from .loggs import logger, disnake_logger
 
@@ -55,7 +57,7 @@ class MMLength(NamedTuple):
 class AppSettings(BaseSettings):
     TESTING: bool = True if isinstance(os.environ.get("TESTING"), str) else False
     TESTING_GUILDS: list[int] = [
-        1007712151160488007,     # community
+        1007712151160488007,  # community
     ]
 
     TIMEZONE = datetime.timezone(offset=datetime.timedelta(hours=3), name="UTC")
@@ -109,13 +111,30 @@ class Bot(InteractionBot):
         self.APP_SETTINGS = AppSettings()
         self.BASE_DIR = Path(__file__).resolve().parent.parent
         self.logger = logger
+        self.i10n = TranslationClient(
+            languages=["en", "ru", "uk"],
+            dir_path=str(self.BASE_DIR / "translation"),
+            default_lang="en",
+            splitters=(
+                ":",
+                ".",
+            ),
+            bot=self,
+        )
+        self.i10n.set_instance(self.i10n)
         self.prisma: Prisma = prisma
         self.disnake_logger = disnake_logger
 
         disnake.mixins.Hashable.snowflake = snowflake  # noqa
         pydantic.main.BaseModel.id_ = id_  # noqa
 
-        super().__init__(*args, **kwargs, intents=intents, reload=self.APP_SETTINGS.TESTING, test_guilds=self.APP_SETTINGS.TESTING_GUILDS if self.APP_SETTINGS.TESTING else None)
+        super().__init__(
+            *args,
+            **kwargs,
+            intents=intents,
+            reload=self.APP_SETTINGS.TESTING,
+            test_guilds=self.APP_SETTINGS.TESTING_GUILDS if self.APP_SETTINGS.TESTING else None,
+        )
 
     @property
     def now(self):
@@ -126,6 +145,5 @@ class Bot(InteractionBot):
             style=disnake.ButtonStyle.gray,
             custom_id=f"deleteOriginalMessage_{user.id}",
             emoji=disnake.utils.get(self.emojis, name=f"deleteMessageEmoji{random.randint(1, 2)}")
-                  or "❌",
+            or "❌",
         )
-

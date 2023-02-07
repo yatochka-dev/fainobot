@@ -171,8 +171,11 @@ async def dashboard_get_guild(
 
     guild_dantic = GuildDantic.from_snake(guild_obj)
 
+
+
     return DashResponse(
         guild=guild_dantic,
+
 
     )
 

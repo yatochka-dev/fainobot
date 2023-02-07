@@ -40,6 +40,7 @@ class CacheNamespaces(Enum):
 
     slash_commands_statistics = "slash_commands_statistics"
 
-
+    # translating
+    guilds_cached_language = "guilds_cached_language"
 
 

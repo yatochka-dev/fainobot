@@ -31,9 +31,12 @@ def create_embeds_from_fields(
 
 
 class EmbedField:
+    name_limit = 256
+    value_limit = 1024
+
     def __init__(self, name, value, inline=False):
-        self.name = name
-        self.value = value
+        self.name = str(name)[:self.name_limit]
+        self.value = str(value)[:self.value_limit]
         self.inline = inline
 
     def to_dict(self):

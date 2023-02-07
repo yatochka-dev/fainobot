@@ -1,0 +1,107 @@
+{
+  "profile_cmd": {
+    "name": "profile",
+    "description": "Get a member's profile",
+    "options": {
+      "user": {
+        "name": "user",
+        "description": "The member to get the profile of"
+      }
+    },
+    "strings": {
+      "money": "Money",
+      "bank_balance": "Bank Balance",
+      "joined": "Joined the server",
+      "title": "${name}'s profile"
+    },
+    "errors": {
+      "no_bot": "You can't get the profile of a bot"
+    }
+  },
+  "transfer_cmd": {
+    "name": "transfer",
+    "description": "Transfer money to another member",
+    "options": {
+      "user": {
+        "name": "user",
+        "description": "The member to transfer money to"
+      },
+      "amount": {
+        "name": "amount",
+        "description": "The amount of money to transfer"
+      }
+    },
+    "strings": {
+      "current_balance": "Current balance",
+      "success_title": "Money transfer",
+      "success": "Successfully transferred ${amount} to ${mention}"
+    },
+    "errors": {
+      "title": "An error occurred while transferring money",
+      "no_bot": "You can't transfer money to a bot",
+      "no_self": "You can't transfer money to yourself",
+      "not_enough": "You do not have enough money to transfer, your balance is ${balance}, you are trying to transfer ${amount}.",
+      "greater_than_zero": "The amount of money to transfer must be greater than 0"
+    }
+  },
+  "shop_cmd": {
+    "name": "shop"
+  },
+  "shop_list_cmd": {
+    "name": "list",
+    "description": "List all items in the shop",
+    "strings": {
+      "title": "Shop",
+      "description": "Here are all the items you can buy"
+    },
+    "errors": {
+      "title": "An error occurred while listing the shop",
+      "no_items": "There are no items in the shop"
+    }
+  },
+  "shop_buy_cmd": {
+    "name": "buy",
+    "description": "Buy an item from the shop",
+    "options": {
+      "item": {
+        "name": "item",
+        "description": "The item to buy"
+      }
+    },
+    "strings": {
+      "success_title": "Item bought",
+      "success": "You bought `#${index}` ${title} \n use `/inventory` to see your items"
+    },
+    "errors": {
+      "title": "An error occurred while buying an item",
+      "no_item": "Item ${item} not found",
+      "not_enough": "You do not have enough money to buy this item, your balance is ${balance}, the item costs ${cost}.",
+      "out_of_stock": "This item is out of stock",
+      "not_available": "This item is not available",
+      "not_buy_able": "This item can't be bought",
+      "went_wrong": "Something went wrong while buying this item, please try again later"
+    }
+  },
+  "shop_view_cmd": {
+    "name": "view",
+    "description": "View an item from the shop",
+    "options": {
+      "item": {
+        "name": "item",
+        "description": "The item to view"
+      }
+    },
+    "strings": {
+      "title": "Item",
+      "description": "`#${index}` - ${title}",
+      "cost": "Cost",
+      "stock": "Stock",
+      "available": "Available"
+    },
+    "errors": {
+      "title": "An error occurred while viewing an item",
+      "no_item": "Item ${item} not found"
+    }
+  }
+}
+

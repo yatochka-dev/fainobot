@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
 import asyncio
 import os
 
-from disnake import CommandInter
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from pydantic import ValidationError
 
 from app import Bot
 from app.apis import apis
+from app.dantic import APIResponse
 from app.db import prisma
 
 app = FastAPI()
@@ -43,6 +45,11 @@ async def load_cogs():
 
 @app.on_event("startup")
 async def startup():
+    import locale
+
+    if locale.getpreferredencoding().upper() != "UTF-8":
+        locale.setlocale(locale.LC_ALL, "en_US.UTF-8")
+
     bot.logger.debug("Loading environment variables")
     load_env()
     bot.logger.debug("Loaded environment variables")
@@ -67,8 +74,15 @@ async def startup():
         bot.logger.critical("No Discord token found!")
 
 
-
-
 @app.on_event("shutdown")
 async def shutdown():
     await prisma.disconnect()
+
+
+@app.exception_handler(
+    ValidationError,
+)
+async def validation_exception_handler(request, exc: ValidationError):
+    return APIResponse.as_error(
+        error=str(exc),
+    )

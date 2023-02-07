@@ -191,6 +191,8 @@ class MemberService(CRUDXService):
         if item.availableUntil is not None and item.availableUntil < self.bot.now:
             raise ValueError("not_available")
 
+        will_item_be_out_of_stock = item.stock is not None and item.stock == 1
+
         try:
             new_inventory_item = await self.bot.prisma.inventoryitem.create(
                 data={
@@ -199,15 +201,14 @@ class MemberService(CRUDXService):
                             "id": member_db.id,
                         },
                     },
-                    "original": {
-                        "connect": {
-                            "id": item.id,
-                        },
-                    },
+                    "title": item.title,
+                    "replyMessage": item.replyMessage,
+                    "description": item.description,
                 },
             )
         except Exception as e:
-            self.bot.logger.error(f"Error buying item {item.title} ({item.id}) for {member.name} ({member_db.id})")
+            self.bot.logger.error(
+                f"Error buying item {item.title} ({item.id}) for {member.name} ({member_db.id})")
             raise e
 
         async with self.bot.prisma.batch_() as db:
@@ -221,6 +222,7 @@ class MemberService(CRUDXService):
                 },
             )
 
+        if not will_item_be_out_of_stock:
             db.item.update(
                 where={
                     "id": item.id,
@@ -229,13 +231,11 @@ class MemberService(CRUDXService):
                     "stock": {"decrement": 1},
                 },
             )
+        else:
+            db.item.delete(
+                where={
+                    "id": item.id,
+                },
+            )
 
-        return await self.bot.prisma.inventoryitem.find_unique(
-            where={
-                "id": new_inventory_item.id,
-            },
-            include={
-                "owner": True,
-                "original": True,
-            },
-        )
+        return new_inventory_item
