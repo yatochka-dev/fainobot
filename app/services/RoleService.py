@@ -1,3 +1,5 @@
+import time
+
 import disnake
 from prisma.enums import CollectType
 
@@ -7,7 +9,7 @@ from .. import Settings
 
 class RoleService(AppService):
 
-    async def create_role(
+    async def add_role(
             self,
             role: disnake.Role,
     ):
@@ -20,6 +22,17 @@ class RoleService(AppService):
                     },
                 },
                 "snowflake": self.to_safe_snowflake(role.id)
+            }
+        )
+
+    async def delete_role(
+            self,
+            role: disnake.Role,
+    ):
+        self.bot.logger.debug(f"Deleting role: {role.id}")
+        return await self.bot.prisma.role.delete(
+            where={
+                "snowflake": self.to_safe_snowflake(role.id),
             }
         )
 
@@ -60,36 +73,59 @@ class RoleService(AppService):
             data=data,
         )
 
+    @staticmethod
+    def _is_to_be_saved(role: disnake.Role):
+        return role.is_bot_managed() is False
+
     async def sync_bot_roles(self):
         # I have self.bot.guilds
         # Each guild has roles
-
+        start = time.perf_counter()
         all_bot_roles = [
-            role
+            (self.to_safe_snowflake(role.id), self.to_safe_snowflake(role.guild.id))
             for guild in self.bot.guilds
             for role in guild.roles
-            if not role.is_bot_managed()
+            if self._is_to_be_saved(role)
         ]
-
-        created = await self.bot.prisma.role.upsert(
-            where={
-                "snowflake": {
-                    "in": [
-                        self.to_safe_snowflake(role.id)
-                        for role in all_bot_roles
-                    ]
-                },
-            },
+        created = await self.bot.prisma.role.create_many(
+            data=[
+                {
+                    "snowflake": role[0],
+                    "guildId": role[1],
+                }
+                for role in all_bot_roles
+            ],
+            skip_duplicates=True,
         )
+        # for role in all_bot_roles:
+        #     await self.bot.prisma.role.upsert(
+        #         where={
+        #             "snowflake": self.to_safe_snowflake(role.id)
+        #         },
+        #         data={
+        #             "create": {
+        #                 "snowflake": self.to_safe_snowflake(role.id),
+        #                 "guild": {
+        #                     "connect": {
+        #                         "snowflake": self.to_safe_snowflake(role.guild.id),
+        #                     }
+        #                 }
+        #             },
+        #             "update": {},
+        #         }
+        #     )
+        #     created += 1
 
-        await self.bot.prisma.role.delete_many(
+        deleted = await self.bot.prisma.role.delete_many(
             where={
                 "snowflake": {
                     "notIn": [
-                        self.to_safe_snowflake(role.id)
+                        role[0]
                         for role in all_bot_roles
                     ]
                 }
             }
         )
-        return created
+
+        for_ = time.perf_counter() - start
+        return created, deleted, for_

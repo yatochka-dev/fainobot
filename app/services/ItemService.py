@@ -19,7 +19,9 @@ class ItemService(AppService):
 
         return count >= MAX_ITEMS_PER_GUILD, count
 
-    async def create_item(self, data: ValidItemDataDANT, guild: disnake.Guild) -> models.Item:
+    async def create_item(
+            self, data: ValidItemDataDANT, guild: disnake.Guild, include: dict[str, bool] = None
+    ) -> models.Item:
         self.bot.logger.debug(f"Creating item with data: {data!r}")
 
         count = await self.bot.prisma.item.count(where={"guild": {"snowflake": guild.snowflake}})
@@ -72,14 +74,49 @@ class ItemService(AppService):
         # )
         # return item
 
-        return await self.bot.prisma.item.find_first(
+        item = await self.bot.prisma.item.find_first(
             where={
                 "guild": {
                     "snowflake": guild.snowflake,
                 },
                 "index": current_index,
             },
+            include=include
         )
+
+        updated = await self.bot.prisma.item.update(
+            where={
+                "id": item.id
+            },
+            data={
+                "rolesRequired": {
+                    "connect": [
+                        {
+                            "snowflake": role
+                        }
+                        for role in data.rolesRequired
+                    ]
+                },
+                "rolesToAdd": {
+                    "connect": [
+                        {
+                            "snowflake": role
+                        }
+                        for role in data.rolesToAdd
+                    ]
+                },
+                "rolesToRemove": {
+                    "connect": [
+                        {
+                            "snowflake": role
+                        }
+                        for role in data.rolesToRemove
+                    ]
+                },
+            }
+        )
+
+        return updated
 
     async def update_item(self, item_id: int, data: ValidItemDataDANT):
         self.bot.logger.debug(f"Updating item with id {item_id} data: {data!r}")
@@ -100,23 +137,24 @@ class ItemService(AppService):
 
     async def delete_item(self, item_id: int):
         self.bot.logger.debug(f"Deleting item with id: {item_id}")
-        await self.bot.prisma.item.delete(
+        return await self.bot.prisma.item.delete(
             where={
                 "id": item_id,
             },
         )
-        return None
 
-    async def get_item(self, item_id: int) -> models.Item:
+    async def get_item(self, item_id: int, include: dict = None) -> models.Item:
         self.bot.logger.debug(f"Getting item with id: {item_id}")
         item = await self.bot.prisma.item.find_unique(
             where={
                 "id": item_id,
             },
+            include=include
         )
         return item
 
-    async def get_items(self, guild: disnake.Guild) -> list[models.Item]:
+    async def get_items(self, guild: disnake.Guild, include: dict = None, order: dict = None) -> \
+    list[models.Item]:
         self.bot.logger.debug(f"Getting items for guild: {guild.id}")
         items = await self.bot.prisma.item.find_many(
             where={
@@ -124,6 +162,9 @@ class ItemService(AppService):
                     "snowflake": self.to_safe_snowflake(guild.id),
                 },
             },
+            include=include,
+            order=order
+
         )
         return items
 
@@ -243,36 +284,52 @@ class ItemService(AppService):
                     "id": member.id,
                 },
             },
-            include={
-                "original": True,
-            }
         )
 
         return inventory
 
-    async def get_items_for_use_autocomplete(self, title: str, member: models.Member):
-        # self.bot.logger.debug(f"Getting items for use autocomplete: {title!r}")
-        #
-        # regex = re.compile(r"#(\d+) - (.+)")
-        #
-        # index = regex.search(title).group(1)
-        #
-        # self.bot.logger.debug(f"Index: {index!r}")
-        #
-        # if not index:
-        #     return None
-        #
-        # index = int(index)
-        #
-        # item = await self.bot.prisma.inventoryitem.find_first(
-        #     where={
-        #         "original": {"index": {"equals": index}},
-        #         "owner": {"id": member.id},
-        #     },
-        #     include={
-        #         "original": True,
-        #     }
-        # )
+    async def get_items_for_use_autocomplete(self, title: str, member: disnake.Member):
 
-        # return item
-        raise NotImplementedError("Not implemented yet")
+        items = await self.bot.prisma.inventoryitem.find_many(
+            where={
+                "title": {
+                    "contains": title
+                },
+                "owner": {
+                    "guildId": self.to_safe_snowflake(member.guild.id),
+                    "userId": self.to_safe_snowflake(member.id)
+                }
+            }
+        )
+
+        return items, len(items) >= 1
+
+    async def get_item_from_use_autocomplete(
+            self, title: str, member: disnake.Member
+    ) -> models.InventoryItem | None:
+        item = await self.bot.prisma.inventoryitem.find_first(
+            where={
+                "title": {
+                    "contains": title
+                },
+                "owner": {
+                    "guildId": self.to_safe_snowflake(member.guild.id),
+                    "userId": self.to_safe_snowflake(member.id)
+                }
+            }
+        )
+
+        return item
+
+    async def use_item(self, item: models.InventoryItem):
+        self.bot.logger.debug(f"Using item: {item.id}")
+        deleted = await self.bot.prisma.inventoryitem.delete(
+            where={
+                "id": item.id
+            }
+        )
+
+        if not deleted:
+            raise ValueError("Not found")
+
+        return deleted.replyMessage

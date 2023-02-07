@@ -59,3 +59,13 @@ def db_required(coro):
         await coro(self, inter, *args, **kwargs)
 
     return wrapper
+
+def api_endpoint_restriction(coro):
+
+    @functools.wraps(coro)
+    async def wrapper(self, payload, *args, **kwargs):
+
+
+        await coro(self, payload, *args, **kwargs)
+
+    return wrapper

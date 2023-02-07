@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import os
-import sys
-
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.gzip import GZipMiddleware
+from pydantic import ValidationError
 
 from app import Bot
 from app.apis import apis
+from app.dantic import APIResponse
 from app.db import prisma
 
 app = FastAPI()
@@ -77,3 +77,12 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await prisma.disconnect()
+
+
+@app.exception_handler(
+    ValidationError,
+)
+async def validation_exception_handler(request, exc: ValidationError):
+    return APIResponse.as_error(
+        error=str(exc),
+    )

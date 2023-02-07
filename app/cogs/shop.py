@@ -1,5 +1,6 @@
 from disnake.ext import commands
 from disnake.ext.commands import Cog, slash_command
+from prisma import models
 
 from app import Bot, Embed
 from app.decorators import db_required
@@ -9,7 +10,6 @@ from app.services.MemberService import MemberService
 from app.translation.main import TranslationClient
 from app.types import CommandInteraction, CommandInteractionCommunity
 from app.views import PaginationView
-from disnake import Interaction
 
 client = TranslationClient.get_instance()
 
@@ -17,6 +17,7 @@ shop_init = client.get_command_init("shop")
 list_init = client.get_command_init("shop_list")
 buy_init = client.get_command_init("shop_buy")
 view_init = client.get_command_init("shop_view")
+
 
 class Shop(Cog, ItemService, MemberService):
     def __init__(self, bot: Bot):
@@ -52,8 +53,8 @@ class Shop(Cog, ItemService, MemberService):
 
         fields = [
             Embed.create_field(
-                name=f"`#{item.index}`",
-                value=f"{item.title[:100]}"
+                name=f"{item.price} - {item.title}"[:256],
+                value=f"{item.description or '#'}"[:1024],
             )
             for item in items
         ]
@@ -102,10 +103,11 @@ class Shop(Cog, ItemService, MemberService):
 
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, _.get_error('no_item').apply(item=item), title=_.get_error("title"))
+            raise BotException(500, _.get_error('no_item').apply(item=item),
+                               title=_.get_error("title"))
 
         try:
-            bought_item = await self.member_buy_item(
+            bought_item: models.InventoryItem | None = await self.member_buy_item(
                 member=inter.author,
                 item=item_db,
             )
@@ -152,7 +154,8 @@ class Shop(Cog, ItemService, MemberService):
         _ = await self.bot.i10n.get_command_translation(inter)
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
-            raise BotException(500, _.get_error('no_item').apply(item=item), title=_.get_error("title"))
+            raise BotException(500, _.get_error('no_item').apply(item=item),
+                               title=_.get_error("title"))
 
         await inter.send(
             embed=(await self.item_to_embed(item_db, inter.author, title=_['title'],
@@ -196,10 +199,10 @@ class Shop(Cog, ItemService, MemberService):
 
         fields = [
             Embed.create_field(
-                name=f"`#{item.original.index}` - {item.original.title}"[:100],
-                value=f"{item.original.description or '#'}"[:200]
+                name=f"{index} - {item.title}",
+                value=f"{item.description or '#'}"
             )
-            for item in items
+            for index, item in enumerate(items, start=1)
         ]
 
         embed = Embed(
@@ -230,26 +233,50 @@ class Shop(Cog, ItemService, MemberService):
     )
     @db_required
     async def use(
-        self,
-        inter: CommandInteractionCommunity,
-        item: str = commands.Param(
-            name="item",
-            description="Item that you want to use, from "
-                        "your inventory",
-        ),
+            self,
+            inter: CommandInteractionCommunity,
+            item: str = commands.Param(
+                name="item",
+                description="Item that you want to use, from "
+                            "your inventory",
+            ),
     ):
-        pass
+        _ = await self.bot.i10n.get_command_translation(inter)
+
+        item_db = await self.get_item_from_use_autocomplete(member=inter.user, title=item)
+
+        if item_db is None:
+            raise BotException(500, "No item found", "Error")
+
+        reply_msg = await self.use_item(item_db)
+
+        if reply_msg is None:
+            embed = Embed(
+                title="You used the item",
+                description=f"You used the item `{item_db.title}`",
+                user=inter.user,
+            ).success
+
+        else:
+            embed = None
+
+        await inter.send(
+            content=reply_msg,
+            embed=embed,
+        )
+
 
     @use.autocomplete("item")
     async def use_autocomplete(
             self, inter: CommandInteraction, item: str
     ):
-        items, more_that_zero = await self.get_items_by_title(guild=inter.guild, title=item)
+        items, more_that_zero = await self.get_items_for_use_autocomplete(title=item,
+                                                                          member=inter.user)
 
         if not more_that_zero:
             return []
 
-        titles = [f"#{i.index} - {i.title}"[:100] or "#Not found item" for i in items]
+        titles = [f"{i.title}"[:100] or "#Not found item" for i in items]
 
         return titles
 

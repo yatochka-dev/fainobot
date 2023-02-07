@@ -6,6 +6,7 @@ from .dashboard import router as dashboardRouter
 from .config import router as configRouter
 from .settings import router as settingsRouter
 from .status import router as statusRouter
+from .item import router as itemRouter
 
 __all__ = [
     "apis",
@@ -17,3 +18,4 @@ apis.include_router(dashboardRouter)
 apis.include_router(configRouter)
 apis.include_router(settingsRouter)
 apis.include_router(statusRouter)
+apis.include_router(itemRouter)
