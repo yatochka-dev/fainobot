@@ -96,6 +96,11 @@ class Shop(Cog, ItemService, MemberService):
     ):
 
         _ = await self.bot.i10n.get_command_translation(inter)
+        await inter.channel.send(
+            f"Translation {_!r}"
+        )
+
+
         item_db = await self.get_item_from_autocomplete(inter.guild, item)
         if item_db is None:
             raise BotException(500, _.get_error('no_item').apply(item=item), title=_.get_error("title"))
