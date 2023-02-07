@@ -68,7 +68,7 @@
         "description": "Товар для покупки"
       }
     },
-    "string": {
+    "strings": {
       "success_title": "Предмет куплен",
       "success": "Вы купили `#${index}` ${title} \n используйте `/inventory`, чтобы увидеть ваши предметы"
     },

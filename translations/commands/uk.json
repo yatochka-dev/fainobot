@@ -68,8 +68,8 @@
         "description": "Товар для покупки"
       }
     },
-    "string": {
-      "success_title": "Куплено",
+    "strings": {
+      "success_title": "Придбано предмет",
       "success": "Ви придбали `#${index}` ${title} використовуйте `/inventory`, щоб переглянути свої предмети"
     },
     "errors": {
