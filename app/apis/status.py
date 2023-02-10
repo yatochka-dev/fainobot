@@ -1,5 +1,6 @@
 import disnake
 from fastapi import APIRouter, Depends
+from prisma import models
 
 from app import Bot, get_bot_from_request
 
@@ -20,11 +21,20 @@ async def status(bot: Bot = Depends(get_bot_from_request)):
     }
     # voice_connections = len(bot.voice_clients)
 
-    total_commands_invoked = await bot.prisma.invokedslashcommand.count()
+    total_commands_invoked: list[models.InvokedCommand] = await bot.prisma.invokedcommand.find_many()
+
+    invocations = [
+        cmd.count for cmd in total_commands_invoked
+    ]
+
+    summarized = sum(invocations)
 
     return {
         "servers": servers,
         "online_users": online_users,
-        "total_commands_invoked": total_commands_invoked,
+        "total_commands_invoked": summarized,
         "channels": channels,
+        "verbose_invocations": [
+            {cmd.name: cmd.count} for cmd in total_commands_invoked
+        ]
     }
