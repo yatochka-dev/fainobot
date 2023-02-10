@@ -30,6 +30,7 @@ class ValidItemDataDANT(BaseModel):
 
     @validator("available_time")
     def validate_available_time(cls, available_time: datetime.datetime = None):
+
         if available_time is None:
             return None
 
@@ -70,7 +71,6 @@ class ValidItemDataDANT(BaseModel):
         roles_required = validate_list_of_roles(roles_required, "rolesRequired")
         roles_to_add = validate_list_of_roles(roles_to_add, "rolesToAdd")
         roles_to_remove = validate_list_of_roles(roles_to_remove, "rolesToRemove")
-
 
         return cls(
             title=data["title"],

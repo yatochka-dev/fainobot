@@ -87,6 +87,9 @@ class TranslatedString:
         self.raw_string = dt
         return dt
 
+    def format(self, **kwargs):
+        return self.apply(**kwargs)
+
     def __str__(self):
         return self.raw_string
 

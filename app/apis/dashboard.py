@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
 from app.dantic.auth import DiscordGuildsListForDashboard, DiscordGuild, DiscordOutsideGuild, \
-    DashboardGuildPayload, GuildDantic, AuthModel
+    DashboardGuildPayload, GuildDantic, AuthModel, Role
 from app.services.GuildService import GuildService
 from app.utils.perms import check_endpoint_permission
 
@@ -24,10 +24,13 @@ class InAndOutGuilds(BaseModel):
 class Response(BaseModel):
     guilds: InAndOutGuilds
 
+class BotData(BaseModel):
+    top_role: Role
+
 
 class DashResponse(BaseModel):
     guild: GuildDantic
-
+    botData: BotData
 
 @router.post("/guilds", response_model=Response)
 async def dashboard_get_lists_of_servers(
@@ -171,11 +174,12 @@ async def dashboard_get_guild(
 
     guild_dantic = GuildDantic.from_snake(guild_obj)
 
-
+    top_role = guild_obj.me.top_role
 
     return DashResponse(
         guild=guild_dantic,
-
-
+        botData=BotData(
+            top_role=Role.from_snake(top_role),
+        )
     )
 

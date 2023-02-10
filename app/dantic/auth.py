@@ -83,24 +83,47 @@ class DiscordGuildsListForDashboard(AuthModel):
 
 
 class Emoji(BaseModel):
-    id: int | None
+    id: str | None
     name: str | None
     animated: bool
 
     @classmethod
     def from_snake(cls, data: disnake.Emoji, /):
         return cls(
-            id=data.id,
+            id=str(data.id),
             name=data.name,
             animated=data.animated,
         )
 
+class Role(BaseModel):
+    id: str
+    name: str
+    color: int
+    hoist: bool
+    position: int
+    permissions: int
+    managed: bool
+    mentionable: bool
+
+    @classmethod
+    def from_snake(cls, data: disnake.Role, /):
+        return cls(
+            id=str(data.id),
+            name=data.name,
+            color=data.color.value,
+            hoist=data.hoist,
+            position=data.position,
+            permissions=data.permissions.value,
+            managed=data.managed,
+            mentionable=data.mentionable,
+        )
 
 class GuildDantic(BaseModel):
     id: int
     name: str
     icon: str | None
     banner: str | None
+    roles: list[Role] | None
     emojis: list[Emoji] | None
 
     # booleans
@@ -108,12 +131,15 @@ class GuildDantic(BaseModel):
 
     @classmethod
     def from_snake(cls, data: disnake.Guild, /):
+        roles = [Role.from_snake(role) for role in data.roles if not role.is_bot_managed() and not role.is_default()]
+        roles.reverse()
         ret = cls(
             id=data.id,
             name=data.name,
             icon=str(data.icon.url) if data.icon else None,
             banner=str(data.banner.url) if data.banner else None,
             emojis=[Emoji.from_snake(emoji) for emoji in data.emojis],
+            roles=roles,
 
             # booleans
             banner_animated=data.banner.is_animated() if data.banner else False,

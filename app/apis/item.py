@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from prisma.errors import DataError
+from pydantic import ValidationError
 from starlette import status
 from starlette.requests import Request
 
@@ -19,7 +20,7 @@ include = {
 }
 
 order = {
-    "index": "asc"
+    "index": "desc"
 }
 
 class BasePayload(BasePayloadWithGuildIdAndAuth):
@@ -27,7 +28,7 @@ class BasePayload(BasePayloadWithGuildIdAndAuth):
 
 
 class AddItemPayload(BasePayload):
-    item: ValidItemDataDANT
+    item: dict
 
 
 @router.post("/items")
@@ -101,6 +102,9 @@ async def dashboard_add_shop_item(
         payload: AddItemPayload,
         service: ItemService = Depends(ItemService)
 ):
+    service.bot.logger.debug("dashboard_add_shop_item")
+    service.bot.logger.debug(f"{payload=!r}")
+
     perms = await check_endpoint_permission(
         payload=payload,
         service=service,
@@ -110,10 +114,12 @@ async def dashboard_add_shop_item(
         return perms
 
     try:
-        item_as_dict = payload.item.dict()
+        item_as_dict = payload.item
 
         validated_item_data = ValidItemDataDANT.from_api(item_as_dict)
 
+    except ValidationError as e:
+        return APIResponse.as_error(code=400, error=f"Validation error {e}")
     except ValueError as e:
         return APIResponse.as_error(code=400, error=f"Validation error {e}")
 
