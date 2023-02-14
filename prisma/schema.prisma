@@ -111,9 +111,15 @@ model Role {
     guild   Guild  @relation(fields: [guildId], references: [snowflake])
     guildId String
     
-    collectType CollectType @default(noCollect)
-    collectFixedAmount Int @default(10)
-    collectPercentageAmount Int @default(10)
+    // role-income 
+    
+    incomeSettings_ Json @db.Json @default("{ \"enabled\": false, \"place\": \"bank\", \"amount\": 100, \"cooldown\": 60}")
+    // roleIncomeType RoleIncomeType @default(noIncome)
+    // roleIncomePlace RoleIncomePlace @default(bank)
+    // roleIncomeAmount Int @default(100)
+    // roleIncomeCooldown Int @default(60)
+
+    // don't touch this sh*t 
 
     itemsRequired Item[] @relation("ItemRolesRequired")
     itemsToAdd Item[] @relation("ItemRolesToAdd")
@@ -176,13 +182,9 @@ model InventoryItem {
 
 
 // Statistics 
-model InvokedSlashCommand {
-    interaction_id String @id 
-    command_name String
-    guild_id String
-    user_id String
-    channel_id String
-    created_at DateTime @default(now())
+model InvokedCommand {
+    name String @id @db.Char(50)
+    count Int @default(0)
 }
 
 enum Language {
@@ -196,8 +198,13 @@ enum MoneyAmountType {
     random
 }
 
-enum CollectType {
+enum RoleIncomeType {
     fixed
     percentage
-    noCollect
+    noIncome
+}
+
+enum RoleIncomePlace { 
+    cash 
+    bank 
 }

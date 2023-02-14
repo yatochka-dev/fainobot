@@ -38,9 +38,14 @@ class CacheNamespaces(Enum):
 
     # bot's statistics
 
-    slash_commands_statistics = "slash_commands_statistics"
+    invoked_commands = "invoked_commands"
+    invoked_commands_saved = "invoked_commands_saved"
+
 
     # translating
     guilds_cached_language = "guilds_cached_language"
+
+    # income
+    role_income = "role_income"
 
 

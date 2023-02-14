@@ -2,10 +2,12 @@ import re
 
 import disnake
 from prisma import models
+from prisma.models import Item
 
 from app import Embed, EmbedField
 from app.dantic import ValidItemDataDANT
 from app.services.index import AppService
+from app.translation.core import TranslatedString
 from app.types import DiscordUtilizer
 
 MAX_ITEMS_PER_GUILD = 200
@@ -154,7 +156,7 @@ class ItemService(AppService):
         return item
 
     async def get_items(self, guild: disnake.Guild, include: dict = None, order: dict = None) -> \
-    list[models.Item]:
+            list[models.Item]:
         self.bot.logger.debug(f"Getting items for guild: {guild.id}")
         items = await self.bot.prisma.item.find_many(
             where={
@@ -245,8 +247,8 @@ class ItemService(AppService):
             self,
             item: models.Item,
             user: DiscordUtilizer,
-            title: str = "Item `#{item.index}`",
-            desc: str = None,
+            title: str | TranslatedString = "Item `#{item.index}`",
+            desc: str | TranslatedString = None,
     ) -> Embed:
 
         fields = [
@@ -266,9 +268,19 @@ class ItemService(AppService):
                 )
             )
 
+        if isinstance(title, TranslatedString):
+            title = title.apply(item=item)
+        elif title:
+            title = title.format(item=item)
+
+        if isinstance(desc, TranslatedString):
+            desc = desc.apply(item=item)
+        elif desc:
+            desc = desc.format(item=item)
+
         embed = Embed(
-            title=title.format(item=item) if title else None,
-            description=desc.format(item=item) if desc else None,
+            title=title if title else None,
+            description=desc if desc else None,
             fields=fields,
             user=user or self.bot,
         )
@@ -333,3 +345,19 @@ class ItemService(AppService):
             raise ValueError("Not found")
 
         return deleted.replyMessage
+
+    async def validate_items(
+            self,
+    ):
+        not_valid_where = {
+            'OR': [
+                {'stock': {'lte': 0}},
+                {'availableUntil': {'lt': self.bot.now}},
+            ]
+        }
+
+        deleted = await Item.prisma().delete_many(
+            where=not_valid_where,
+        )
+
+        return deleted

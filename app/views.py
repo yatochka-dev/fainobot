@@ -163,3 +163,47 @@ class SendModalWithButtonView(BaseView):
         await inter.response.defer()
         await inter.delete_original_message()
         self.stop()
+
+
+class MembersView(PaginationView):
+
+    def __init__(
+            self,
+            **kwargs,
+    ):
+        super().__init__(**kwargs)
+
+    def _update_state(self) -> None:
+        if len(self.pages) == 1:
+            self.clear_items()
+            self.add_item(self.remove)
+            self.add_item(self.reveal)
+
+        self.first_page.disabled = self.prev_page.disabled = self.current_page == 0
+        self.last_page.disabled = self.next_page.disabled = self.current_page == len(self.pages) - 1
+
+    @staticmethod
+    def _get_members(message: disnake.Message) -> list[disnake.Member]:
+        embed = message.embeds[0]
+
+        mentions = []
+
+        for f in embed.fields:
+            id_ = int(f.name)
+            member = message.guild.get_member(id_)
+            if member:
+                mentions.append(member)
+
+        return mentions
+
+    @disnake.ui.button(label="reveal️", style=disnake.ButtonStyle.blurple, custom_id="reveal")
+    async def reveal(self, _button: disnake.ui.Button, inter: disnake.MessageInteraction):
+        original_message = await inter.channel.fetch_message(inter.message.id)
+
+        members = self._get_members(original_message)
+
+        if not members:
+            return await inter.response.send_message("No members found", ephemeral=True)
+
+        text = ",\n".join([f"{member.mention} ({member.id})" for member in members])
+        await inter.send(text, ephemeral=True)

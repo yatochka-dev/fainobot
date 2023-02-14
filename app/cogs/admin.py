@@ -1,6 +1,7 @@
 from disnake.ext.commands import Cog, is_owner, slash_command
 
 from app import Bot, Settings, Embed
+from app.models.role import RoleM, IncomeSettings
 from app.services.cache.CacheService import CacheService
 from app.types import CommandInteraction
 from app.views import PaginationView
@@ -133,14 +134,31 @@ class Test(Cog):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    # @slash_command(
-    #     guild_ids=Settings.TESTING_GUILDS,
-    #     name="test",
-    # )
-    # async def test(self, inter: CommandInteraction):
-    #     _ = await self.bot.i10n.create_translation_state(group="commands", payload=inter)
-    #
-    #     await inter.send(_["welcome"] + " " + _.language)
+    @slash_command(
+        guild_ids=Settings.TESTING_GUILDS,
+        name="test",
+    )
+    async def test(self, inter: CommandInteraction):
+        role: RoleM = await RoleM.prisma().find_unique(
+            where={
+                "snowflake": "1007712151160488007"
+            }
+        )
+
+
+        await role.edit_incomeSettings(
+            enabled=True,
+        )
+
+        role_new: RoleM = await RoleM.prisma().find_unique(
+            where={
+                "snowflake": "1007712151160488007"
+            }
+        )
+
+        await inter.send(
+            f"Roles: {role_new.incomeSettings!r}"
+        )
 
 def setup(bot: Bot):
     bot.add_cog(Admin(bot))

@@ -24,6 +24,16 @@ class CacheService(AppService):
     ):
         return await self.bot.cache.set(key, value, ttl=ttl, namespace=namespace)
 
+    async def set_many(
+            self,
+            data: dict[str, Any],
+            *,
+            ttl: int = None,
+            namespace: str = None,
+    ):
+        return await self.bot.cache.multi_set(data, ttl=ttl, namespace=namespace)
+
+
     async def delete(self, key: str, *, namespace: str = None):
         return await self.bot.cache.delete(key, namespace=namespace)
 
@@ -35,6 +45,9 @@ class CacheService(AppService):
 
     async def get_many(self, keys: list[str], *, namespace: str = None):
         return await self.bot.cache.multi_get(keys, namespace=namespace)
+
+    async def increment(self, key: str, *, namespace: str = None, amount: int = 1):
+        return await self.bot.cache.increment(key, namespace=namespace, delta=amount)
 
     async def get_all(
             self,

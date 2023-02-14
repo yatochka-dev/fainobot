@@ -1,10 +1,8 @@
 import time
 
 import disnake
-from prisma.enums import CollectType
 
 from .index import AppService
-from .. import Settings
 
 
 class RoleService(AppService):
@@ -34,43 +32,6 @@ class RoleService(AppService):
             where={
                 "snowflake": self.to_safe_snowflake(role.id),
             }
-        )
-
-    async def manage_role_collect(
-            self,
-            role: disnake.Role,
-            collectType: CollectType,
-            collectFixedAmount: int = None,
-            collectPercentageAmount: int = None,
-    ):
-        if collectFixedAmount:
-            if collectFixedAmount < 0:
-                raise ValueError("Fixed amount must be greater than 0")
-            if collectFixedAmount > Settings.PRICE_NUMBER.max:
-                raise ValueError("Fixed amount must be less than 1000000")
-
-        if collectPercentageAmount:
-            if collectPercentageAmount < 0:
-                raise ValueError("Percentage must be greater than 0")
-            if collectPercentageAmount > 100:
-                raise ValueError("Percentage must be less than 100")
-
-        self.bot.logger.debug(f"Updating role: {role.id} collect mode: {collectType}")
-
-        data = {
-            "collectType": collectType,
-        }
-
-        if collectFixedAmount:
-            data["collectFixedAmount"] = collectFixedAmount
-        if collectPercentageAmount:
-            data["collectPercentageAmount"] = collectPercentageAmount
-
-        return await self.bot.prisma.role.update(
-            where={
-                "snowflake": self.to_safe_snowflake(role.id),
-            },
-            data=data,
         )
 
     @staticmethod
