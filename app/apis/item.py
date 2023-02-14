@@ -29,6 +29,9 @@ class BasePayload(BasePayloadWithGuildIdAndAuth):
 class AddItemPayload(BasePayload):
     item: ValidItemDataDANT
 
+class EditItemPayload(BasePayload):
+    item_id: int
+    item: ValidItemDataDANT
 
 @router.post("/items")
 async def dashboard_get_shop_items(
@@ -133,3 +136,40 @@ async def dashboard_add_shop_item(
         return APIResponse.as_error(code=500, error=f"Creating error {e}")
 
     return APIResponse.as_success(data=created_item, code=status.HTTP_201_CREATED)
+
+@router.patch("/items/edit")
+async def dashboard_edit_shop_item(
+        payload: EditItemPayload,
+        service: ItemService = Depends(ItemService)
+):
+    perms = await check_endpoint_permission(
+        payload=payload,
+        service=service,
+    )
+
+    if not isinstance(perms, bool):
+        return perms
+
+    try:
+        item_as_dict = payload.item.dict()
+
+        validated_item_data = ValidItemDataDANT.from_api(item_as_dict)
+
+    except ValueError as e:
+        return APIResponse.as_error(code=400, error=f"Validation error {e}")
+
+    try:
+        guild = service.bot.get_guild(int(payload.guild_id))
+
+        edited_item = await service.update_item(
+            item_id=payload.item_id,
+            data=validated_item_data,
+        )
+    except ValueError as e:
+        return APIResponse.as_error(code=400, error=f"Editing error {e}")
+    except DataError as e:
+        return APIResponse.as_error(code=400, error=f"Editing error {e}")
+    except Exception as e:
+        return APIResponse.as_error(code=500, error=f"Editing error {e}")
+
+    return APIResponse.as_success(data=edited_item)

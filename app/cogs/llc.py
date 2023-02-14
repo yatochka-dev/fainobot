@@ -1,6 +1,6 @@
 import disnake
 from disnake import VoiceChannel
-from disnake.components import MessageComponent
+from disnake.components import Button
 from disnake.ext.commands import Cog
 
 from app import Embed
@@ -12,7 +12,7 @@ class LowLevelListener(Cog):
 
     @Cog.listener("on_button_click")
     async def on_cancel_button(self, inter: disnake.MessageInteraction):
-        component: MessageComponent = inter.component
+        component: Button = inter.component
 
         if isinstance(inter.channel, VoiceChannel):
             return
@@ -24,13 +24,7 @@ class LowLevelListener(Cog):
 
         manage_msgs = inter.channel.permissions_for(inter.author).manage_messages
 
-        self.bot.logger.debug(f"manage_msgs: {manage_msgs}")
-        self.bot.logger.debug(f"inter.author.id: {inter.author.id}")
-        self.bot.logger.debug(f"user_id: {user_id}")
-
         can_delete = manage_msgs or int(user_id) == inter.author.id
-
-        self.bot.logger.debug(f"can_delete: {can_delete}")
 
         if not can_delete:
             await inter.send(

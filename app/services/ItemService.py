@@ -2,6 +2,7 @@ import re
 
 import disnake
 from prisma import models
+from prisma.models import Item
 
 from app import Embed, EmbedField
 from app.dantic import ValidItemDataDANT
@@ -344,3 +345,19 @@ class ItemService(AppService):
             raise ValueError("Not found")
 
         return deleted.replyMessage
+
+    async def validate_items(
+            self,
+    ):
+        not_valid_where = {
+            'OR': [
+                {'stock': {'lte': 0}},
+                {'availableUntil': {'lt': self.bot.now}},
+            ]
+        }
+
+        deleted = await Item.prisma().delete_many(
+            where=not_valid_where,
+        )
+
+        return deleted

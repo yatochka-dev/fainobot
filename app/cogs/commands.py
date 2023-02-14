@@ -1,9 +1,10 @@
 import disnake
 from disnake.ext.commands import Cog, slash_command
 
-from app import Bot
+from app import Bot, Embed
 from app.services.cache.MemberCache import MemberCacheService
-from app.types import CommandInteraction, CacheNamespaces
+from app.types import CommandInteraction
+from app.views import MembersView
 
 
 class Command(Cog, MemberCacheService):
@@ -11,20 +12,38 @@ class Command(Cog, MemberCacheService):
         self.bot = bot
 
     @slash_command(
-        name="under_cooldown"
+        name="members"
     )
-    async def get_cache(self, inter: CommandInteraction, k: str):
-        under_cd, until = await self.member_under_cooldown(
-            member_id=inter.author.id,
-            namespace=CacheNamespaces(k + "_cooldown")
+    async def members(self, inter: CommandInteraction, role: disnake.Role = None):
+
+        members = inter.guild.members if not role else role.members
+
+        fields = [
+            Embed.create_field(
+                name=f"{member.id}",
+                value=f"{member.mention}",
+                inline=True
+            )
+            for member in members
+        ]
+
+        embed = Embed(
+            title="Members",
+            user=inter.user,
         )
 
-        content = f"Under cooldown: {under_cd}\nUntil: " \
-                  f"{disnake.utils.format_dt(until) if until else 'No cooldown'}"
-
-        await inter.send(
-            content
+        pages = embed.paginate(
+            fields=fields,
+            max_size=10
         )
+
+        view = MembersView(pages=pages, user=inter.user, bot=self.bot)
+
+        await inter.send(embed=pages[0], view=view)
+
+
+
+
 
 
 def setup(bot: Bot):

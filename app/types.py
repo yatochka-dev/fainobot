@@ -45,4 +45,7 @@ class CacheNamespaces(Enum):
     # translating
     guilds_cached_language = "guilds_cached_language"
 
+    # income
+    role_income = "role_income"
+
 
